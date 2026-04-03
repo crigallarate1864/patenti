@@ -2,105 +2,103 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Gestionale Patenti - CRI Gallarate</title>
+    <title>Gestionale Guide CRI Gallarate</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-50">
 
-    <nav class="bg-red-700 text-white p-4 shadow-xl mb-6">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="font-bold text-xl">CRI GALLARATE - Portale Patenti</h1>
-            <div class="flex gap-4">
-                <button onclick="tab('visite')" class="bg-white/10 px-4 py-1 rounded">Visite Mediche</button>
-                <button onclick="tab('guide')" class="bg-white/10 px-4 py-1 rounded">Guide Pratiche</button>
+    <div id="login-screen" class="fixed inset-0 bg-red-700 flex flex-col items-center justify-center z-[100] text-white">
+        <h1 class="text-3xl font-bold mb-8 italic text-center text-white">CRI GALLARATE<br>Portale Formazione Patenti</h1>
+        <div class="flex gap-4">
+            <button onclick="login('trainer')" class="bg-white text-red-700 px-8 py-4 rounded-xl font-bold shadow-2xl hover:scale-105 transition">ACCESSO TRAINER</button>
+            <button onclick="login('student')" class="bg-red-900 text-white px-8 py-4 rounded-xl font-bold shadow-2xl hover:scale-105 border border-red-400">ACCESSO ALLIEVO</button>
+        </div>
+    </div>
+
+    <section id="area-trainer" class="hidden container mx-auto p-4">
+        <div class="bg-white p-6 rounded-xl shadow-lg mb-6 border-t-8 border-red-600">
+            <h2 class="text-xl font-bold mb-4 uppercase">Area Istruttori: Offri Disponibilità</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input id="t-nome" type="text" placeholder="Tuo Nome" class="border p-3 rounded">
+                <input id="t-email" type="email" placeholder="Tua Email (per notifiche)" class="border p-3 rounded">
+                <input id="t-data" type="datetime-local" class="border p-3 rounded">
+                <input id="t-mezzo" type="text" placeholder="Mezzo (es. CRI 1234)" class="border p-3 rounded">
+                <button onclick="offriSlot()" class="bg-red-600 text-white font-bold rounded shadow hover:bg-red-700">Pubblica Slot</button>
             </div>
         </div>
-    </nav>
+    </section>
 
-    <main class="container mx-auto p-4">
-        
-        <section id="visite" class="tab-content">
-            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-500">
-                <h2 class="text-xl font-bold mb-4">Programmazione Visita Medica</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input id="v-nome" type="text" placeholder="Nome Volontario" class="border p-3 rounded-lg">
-                    <input id="v-data" type="datetime-local" class="border p-3 rounded-lg">
-                    <select id="v-cat" class="border p-3 rounded-lg">
-                        <option value="3">Patente 3</option>
-                        <option value="4">Patente 4</option>
-                        <option value="5">Patente 5 (10 min + Riflessi)</option>
-                    </select>
-                    <textarea id="v-prescrizioni" placeholder="Prescrizioni (es. lenti, limitazioni...)" class="border p-3 rounded-lg"></textarea>
-                    <button onclick="salvaVisita()" class="md:col-span-2 bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700">Registra Visita</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="guide" class="tab-content hidden">
-            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500">
-                <h2 class="text-xl font-bold mb-4">Prenotazione Guida Addestrativa</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input id="g-nome" type="text" placeholder="Nome Volontario" class="border p-3 rounded-lg">
-                    <select id="g-cat" class="border p-3 rounded-lg" onchange="updateGuideCount()">
-                        <option value="4">Patente 4 (Obbligo: 4 guide)</option>
-                        <option value="5">Patente 5 (Obbligo: 6 guide)</option>
-                    </select>
-                    <select id="g-istruttore" class="border p-3 rounded-lg">
-                        <option value="istruttore1@email.it">Istruttore Rossi</option>
-                        <option value="istruttore2@email.it">Istruttore Bianchi</option>
-                    </select>
-                    <input id="g-data" type="datetime-local" class="border p-3 rounded-lg">
-                    <input id="g-mezzo" type="text" placeholder="Targa / Mezzo" class="border p-3 rounded-lg">
+    <section id="area-student" class="hidden container mx-auto p-4">
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-blue-600">
+            <h2 class="text-xl font-bold mb-2 uppercase">Prenota la tua Guida</h2>
+            <p class="text-sm text-gray-500 mb-6 italic">Scegli uno slot tra quelli messi a disposizione dai trainer.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block font-bold text-gray-700">Il tuo Nome e Cognome</label>
+                    <input id="s-nome" type="text" class="w-full border p-3 rounded mb-4" placeholder="Es: Mario Rossi">
                     
-                    <button onclick="salvaGuida()" class="md:col-span-2 bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Invia mail all'Istruttore e Salva</button>
+                    <label class="block font-bold text-gray-700">Categoria richiesta</label>
+                    <select id="s-cat" class="w-full border p-3 rounded mb-4">
+                        <option value="4">Patente 4 (Percorso 4 guide)</option>
+                        <option value="5">Patente 5 (Percorso 6 guide)</option>
+                    </select>
+                </div>
+                
+                <div id="lista-disponibilita" class="space-y-3">
+                    <h3 class="font-bold border-b pb-2 text-red-600 uppercase text-sm">Slot Disponibili:</h3>
+                    <div class="p-4 bg-gray-50 rounded border italic text-gray-400 text-center">Nessuno slot disponibile al momento.</div>
                 </div>
             </div>
-        </section>
-
-    </main>
+        </div>
+    </section>
 
     <script>
-        const GAS_URL = "INSERISCI_QUI_URL_APPS_SCRIPT";
+        const URL_APP = "IL_TUO_URL_SCRIPT";
 
-        function tab(name) {
-            document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
-            document.getElementById(name).classList.remove('hidden');
+        function login(role) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('area-' + role).classList.remove('hidden');
+            if(role === 'student') caricaSlot();
         }
 
-        async function salvaVisita() {
-            const payload = {
-                tipoPratica: "VISITA",
-                volontario: document.getElementById('v-nome').value,
-                dataOra: document.getElementById('v-data').value,
-                categoria: document.getElementById('v-cat').value,
-                prescrizioni: document.getElementById('v-prescrizioni').value
+        async function offriSlot() {
+            const data = {
+                azione: "OFFRI_DISPONIBILITA",
+                istruttore: document.getElementById('t-nome').value,
+                email: document.getElementById('t-email').value,
+                dataOra: document.getElementById('t-data').value,
+                mezzo: document.getElementById('t-mezzo').value
             };
-            await invia(payload);
+            await invia(data);
         }
 
-        async function salvaGuida() {
-            const payload = {
-                tipoPratica: "GUIDA",
-                volontario: document.getElementById('g-nome').value,
-                istruttore: document.getElementById('g-istruttore').options[document.getElementById('g-istruttore').selectedIndex].text,
-                emailIstruttore: document.getElementById('g-istruttore').value,
-                dataOra: document.getElementById('g-data').value,
-                mezzo: document.getElementById('g-mezzo').value
+        async function caricaSlot() {
+            // Qui andrebbe una fetch GET allo sheet per mostrare gli slot LIBERI
+            // Per ora simuliamo la logica di invio
+        }
+
+        async function prenota(slotId, istruttore, dataOra) {
+            const allievo = document.getElementById('s-nome').value;
+            const cat = document.getElementById('s-cat').value;
+            if(!allievo) return alert("Inserisci il tuo nome!");
+
+            const data = {
+                azione: "PRENOTA_GUIDA",
+                slotId: slotId,
+                allievo: allievo,
+                cat: cat,
+                istruttore: istruttore,
+                dataOra: dataOra
             };
-            await invia(payload);
+            
+            const res = await invia(data);
+            alert("Prenotazione effettuata! Controlla lo stato delle tue guide.");
         }
 
         async function invia(p) {
-            try {
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Importante per Google Scripts
-                    body: JSON.stringify(p)
-                });
-                alert("Operazione completata con successo!");
-            } catch (e) {
-                alert("Errore nell'invio: " + e);
-            }
+            const r = await fetch(URL_APP, { method: 'POST', body: JSON.stringify(p) });
+            return r;
         }
     </script>
 </body>
