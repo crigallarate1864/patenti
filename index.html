@@ -2,99 +2,91 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CRI Gallarate - Gestionale Patenti</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .cri-red { background-color: #ed1c24; }
-        .text-cri { color: #ed1c24; }
         .hidden { display: none; }
-        .card-home:hover { transform: translateY(-5px); transition: all 0.3s; }
+        /* Ottimizzazione per mobile: pulsanti grandi e feedback al tocco */
+        button:active { transform: scale(0.96); transition: 0.1s; }
+        input, select, textarea { font-size: 16px !important; } /* Evita zoom automatico su iOS */
+        .card-home { transition: transform 0.2s; -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="bg-slate-50 min-h-screen pb-20 md:pb-0">
 
-    <header class="bg-white shadow-md p-4 sticky top-0 z-50">
+    <header class="bg-white shadow-sm p-3 sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4 cursor-pointer" onclick="showHome()">
-                <img src="logo.png" alt="CRI Logo" class="h-12 w-auto">
-                <div class="border-l-2 border-slate-200 pl-4">
-                    <h1 class="font-black text-xl tracking-tighter text-slate-800">GESTIONALE PATENTI</h1>
-                    <p class="text-[10px] uppercase font-bold text-red-600 tracking-widest">CRI Gallarate</p>
+            <div class="flex items-center gap-3 cursor-pointer" onclick="showHome()">
+                <img src="logo.png" alt="CRI" onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='flex'" class="h-10 w-auto">
+                <div id="alt-logo" class="h-10 w-10 cri-red text-white rounded-full items-center justify-center font-bold text-xs hidden">CRI</div>
+                
+                <div class="border-l border-slate-200 pl-3">
+                    <h1 class="font-black text-sm md:text-xl tracking-tighter text-slate-800 uppercase">Gestionale Patenti</h1>
+                    <p class="text-[8px] md:text-[10px] uppercase font-bold text-red-600 tracking-widest leading-none">CRI Gallarate</p>
                 </div>
             </div>
-            <button onclick="showHome()" class="text-slate-400 hover:text-red-600 font-bold text-sm">
-                <i class="fas fa-home mr-1"></i> HOME
+            <button onclick="showHome()" class="bg-slate-100 p-2 rounded-full text-slate-500 hover:text-red-600 transition">
+                <i class="fas fa-home"></i>
             </button>
         </div>
     </header>
 
-    <main class="container mx-auto p-4 lg:p-8">
+    <main class="container mx-auto p-4">
 
-        <section id="sec-home" class="py-12">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-black text-slate-800 uppercase italic">Benvenuto nel Portale Patenti</h2>
-                <p class="text-slate-500">Seleziona la tua area di accesso per procedere</p>
+        <section id="sec-home" class="py-6 md:py-12">
+            <div class="text-center mb-8 md:mb-12">
+                <h2 class="text-2xl md:text-3xl font-black text-slate-800 uppercase italic">Area Formazione</h2>
+                <p class="text-slate-500 text-sm">Scegli il tuo profilo per accedere</p>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div onclick="switchRole('ALLIEVO')" class="card-home bg-white p-8 rounded-[2rem] shadow-xl border-b-8 border-blue-500 cursor-pointer text-center">
-                    <div class="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
-                        <i class="fas fa-user-graduate"></i>
-                    </div>
-                    <h3 class="text-2xl font-black text-slate-800 mb-2">ALLIEVI</h3>
-                    <p class="text-sm text-slate-500 italic">Proponi le tue disponibilità e controlla il tuo progresso.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 max-w-6xl mx-auto">
+                <div onclick="switchRole('ALLIEVO')" class="card-home bg-white p-6 md:p-8 rounded-3xl shadow-lg border-b-4 border-blue-500 cursor-pointer text-center">
+                    <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fas fa-user-graduate"></i></div>
+                    <h3 class="text-xl font-black text-slate-800 uppercase">Allievi</h3>
+                    <p class="text-xs text-slate-400 mt-1">Prenota le tue guide</p>
                 </div>
 
-                <div onclick="switchRole('ISTRUTTORE')" class="card-home bg-white p-8 rounded-[2rem] shadow-xl border-b-8 border-green-500 cursor-pointer text-center">
-                    <div class="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
-                        <i class="fas fa-chalkboard-teacher"></i>
-                    </div>
-                    <h3 class="text-2xl font-black text-slate-800 mb-2">ISTRUTTORI</h3>
-                    <p class="text-sm text-slate-500 italic">Visualizza le richieste aperte e accetta le guide.</p>
+                <div onclick="switchRole('ISTRUTTORE')" class="card-home bg-white p-6 md:p-8 rounded-3xl shadow-lg border-b-4 border-green-500 cursor-pointer text-center">
+                    <div class="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <h3 class="text-xl font-black text-slate-800 uppercase">Istruttori</h3>
+                    <p class="text-xs text-slate-400 mt-1">Accetta richieste</p>
                 </div>
 
-                <div onclick="switchRole('RESPONSABILE')" class="card-home bg-white p-8 rounded-[2rem] shadow-xl border-b-8 border-red-600 cursor-pointer text-center">
-                    <div class="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
-                        <i class="fas fa-user-shield"></i>
-                    </div>
-                    <h3 class="text-2xl font-black text-slate-800 mb-2">RESPONSABILE</h3>
-                    <p class="text-sm text-slate-500 italic">Gestione anagrafica, pianificazione e assegnazione mezzi.</p>
+                <div onclick="switchRole('RESPONSABILE')" class="card-home bg-white p-6 md:p-8 rounded-3xl shadow-lg border-b-4 border-red-600 cursor-pointer text-center">
+                    <div class="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fas fa-user-shield"></i></div>
+                    <h3 class="text-xl font-black text-slate-800 uppercase">Responsabile</h3>
+                    <p class="text-xs text-slate-400 mt-1">Gestione completa</p>
                 </div>
             </div>
         </section>
 
         <section id="sec-responsabile" class="role-section hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-100">
-                    <h2 class="text-lg font-black mb-6 text-slate-800 uppercase"><i class="fas fa-plus-circle text-red-600 mr-2"></i> Inserimento Nominativo</h2>
-                    <div class="space-y-4">
-                        <select id="adm-ruolo" class="w-full border-2 border-slate-100 p-3 rounded-2xl font-bold outline-none focus:border-red-500">
-                            <option value="TRAINER">Istruttore (Trainer)</option>
-                            <option value="DISCENTE">Allievo (Discente)</option>
+            <div class="flex flex-col gap-6">
+                <div class="bg-white p-5 rounded-3xl shadow-lg border border-slate-100">
+                    <h2 class="text-lg font-black mb-4 uppercase flex items-center gap-2"><i class="fas fa-plus-circle text-red-600"></i> Nuova Anagrafica</h2>
+                    <div class="flex flex-col gap-3">
+                        <select id="adm-ruolo" class="w-full bg-slate-50 border-2 border-slate-100 p-3 rounded-2xl font-bold">
+                            <option value="TRAINER">Trainer</option>
+                            <option value="DISCENTE">Discente</option>
                         </select>
-                        <input id="adm-nome" type="text" placeholder="COGNOME E NOME" class="w-full border-2 border-slate-100 p-3 rounded-2xl uppercase font-bold focus:border-red-500 outline-none">
-                        <input id="adm-email" type="email" placeholder="email@cri.it" class="w-full border-2 border-slate-100 p-3 rounded-2xl outline-none focus:border-red-500">
-                        <select id="adm-cat" class="w-full border-2 border-slate-100 p-3 rounded-2xl font-bold">
-                            <option value="4">Patente 4 (4 guide)</option>
-                            <option value="5">Patente 5 (6 guide)</option>
+                        <input id="adm-nome" type="text" placeholder="COGNOME E NOME" class="w-full bg-slate-50 border-2 border-slate-100 p-3 rounded-2xl uppercase font-bold">
+                        <input id="adm-email" type="email" placeholder="Email (obbligatoria)" class="w-full bg-slate-50 border-2 border-slate-100 p-3 rounded-2xl">
+                        <select id="adm-cat" class="w-full bg-slate-50 border-2 border-slate-100 p-3 rounded-2xl font-bold">
+                            <option value="4">Patente 4</option>
+                            <option value="5">Patente 5</option>
                         </select>
-                        <button onclick="salvaAnagrafica()" class="w-full cri-red text-white py-4 rounded-2xl font-black shadow-lg hover:bg-red-700 transition">SALVA IN ANAGRAFICA</button>
+                        <button onclick="salvaAnagrafica()" class="w-full cri-red text-white py-4 rounded-2xl font-black shadow-lg">SALVA</button>
                     </div>
                 </div>
-
-                <div class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-lg">
-                    <h2 class="text-lg font-black mb-6 uppercase tracking-tight">Registro Generale Guide</h2>
-                    <div class="overflow-x-auto text-sm">
-                        <table class="w-full text-left">
-                            <thead class="border-b">
-                                <tr class="text-slate-400 uppercase text-[10px] font-black">
-                                    <th class="py-3 px-2">Data/Ora</th>
-                                    <th class="py-3 px-2">Allievo</th>
-                                    <th class="py-3 px-2">Istruttore</th>
-                                    <th class="py-3 px-2">Targa/Mezzo</th>
-                                </tr>
+                <div class="bg-white p-5 rounded-3xl shadow-lg overflow-hidden">
+                    <h2 class="text-lg font-black mb-4 uppercase">Registro Guide</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-[11px] md:text-sm">
+                            <thead class="border-b bg-slate-50">
+                                <tr class="text-slate-400 font-bold uppercase"><th class="p-2">Data/Ora</th><th class="p-2">Allievo</th><th class="p-2">Istruttore</th><th class="p-2">Mezzo</th></tr>
                             </thead>
                             <tbody id="tbody-responsabile" class="divide-y font-medium"></tbody>
                         </table>
@@ -104,58 +96,55 @@
         </section>
 
         <section id="sec-allievo" class="role-section hidden">
-            <div class="max-w-3xl mx-auto bg-white p-8 rounded-[2rem] shadow-2xl border-t-8 border-blue-500">
-                <div class="text-center mb-8">
-                    <h2 class="text-2xl font-black uppercase text-slate-800">Proponi Disponibilità</h2>
-                    <p class="text-slate-400 text-sm">Inserisci la tua fascia oraria libera</p>
-                </div>
-                <div class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+            <div class="max-w-xl mx-auto bg-white p-6 rounded-3xl shadow-xl border-t-8 border-blue-500">
+                <h2 class="text-xl font-black mb-4 uppercase text-center">Richiesta Guida</h2>
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Tuo Nome</label>
+                        <select id="sel-allievi" onchange="checkProgress()" class="w-full bg-slate-50 border-2 p-3 rounded-2xl font-bold"></select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Giorno</label>
+                        <input id="all-data" type="date" class="w-full bg-slate-50 border-2 p-3 rounded-2xl font-bold">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-2">Il tuo Nome</label>
-                            <select id="sel-allievi" onchange="checkProgress()" class="w-full border-2 p-4 rounded-2xl font-bold bg-slate-50 outline-none focus:border-blue-500"></select>
+                            <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Dalle ore</label>
+                            <input id="all-inizio" type="time" class="w-full bg-slate-50 border-2 p-3 rounded-2xl font-bold text-center">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-2">Giorno Guida</label>
-                            <input id="all-data" type="date" class="w-full border-2 p-4 rounded-2xl font-bold bg-slate-50 outline-none focus:border-blue-500">
+                            <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Alle ore</label>
+                            <input id="all-fine" type="time" class="w-full bg-slate-50 border-2 p-3 rounded-2xl font-bold text-center">
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-6 text-left">
-                        <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-2 tracking-widest">Dalle ore</label>
-                            <input id="all-inizio" type="time" class="w-full border-2 p-4 rounded-2xl font-bold text-center bg-slate-50 outline-none focus:border-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-2 tracking-widest">Alle ore</label>
-                            <input id="all-fine" type="time" class="w-full border-2 p-4 rounded-2xl font-bold text-center bg-slate-50 outline-none focus:border-blue-500">
-                        </div>
-                    </div>
-                    <div class="bg-blue-50 p-6 rounded-3xl border-2 border-dashed border-blue-100">
-                        <p class="text-[10px] font-black text-blue-400 uppercase mb-2">Stato Percorso:</p>
-                        <div id="stat-allievo" class="text-xl font-black text-blue-700 uppercase">Seleziona un nome...</div>
-                    </div>
-                    <button onclick="inviaRichiesta()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black shadow-xl hover:bg-blue-700 transition">INVIA RICHIESTA GUIDA</button>
+                    <div id="stat-allievo" class="p-4 bg-blue-50 rounded-2xl font-black text-blue-700 text-center uppercase text-sm italic">Scegli il tuo nome</div>
+                    <button onclick="inviaRichiesta()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg">PUBBLICA RICHIESTA</button>
                 </div>
             </div>
         </section>
 
         <section id="sec-istruttore" class="role-section hidden">
-            <div class="max-w-6xl mx-auto">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
-                    <h2 class="text-2xl font-black uppercase text-slate-800"><i class="fas fa-list-ul text-green-600 mr-2"></i> Richieste Guide Aperte</h2>
-                    <div class="w-full md:w-80">
-                        <select id="sel-istruttori" class="w-full border-2 p-4 rounded-2xl font-bold shadow-sm outline-none focus:border-green-500">
-                            </select>
-                    </div>
-                </div>
-                <div id="container-richieste" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left"></div>
+            <div class="flex flex-col gap-4 mb-6">
+                <h2 class="text-xl font-black uppercase text-center">Guide Disponibili</h2>
+                <select id="sel-istruttori" class="w-full bg-white border-2 p-3 rounded-2xl font-bold shadow-sm"></select>
             </div>
+            <div id="container-richieste" class="flex flex-col gap-4">
+                </div>
         </section>
 
     </main>
 
+    <footer class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2 flex justify-around text-[10px] font-bold text-slate-400 z-50">
+        <button onclick="showHome()" class="flex flex-col items-center gap-1"><i class="fas fa-home text-lg"></i>HOME</button>
+        <button onclick="switchRole('ALLIEVO')" class="flex flex-col items-center gap-1"><i class="fas fa-user-graduate text-lg"></i>ALLIEVI</button>
+        <button onclick="switchRole('ISTRUTTORE')" class="flex flex-col items-center gap-1"><i class="fas fa-chalkboard-teacher text-lg"></i>TRAINER</button>
+        <button onclick="switchRole('RESPONSABILE')" class="flex flex-col items-center gap-1"><i class="fas fa-user-shield text-lg"></i>ADMIN</button>
+    </footer>
+
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxo4M0vooFKqftFmo7tt6z13mQX6yw34qBI6ZZYvzCiOKZ0_etfb3UdS-dbUcvnGDKj/exec";
+        const PASS_INSTR = "Guide26!";
+        const PASS_RESP = "Pat3nti26!";
 
         let anagrafica = [];
         let richieste = [];
@@ -163,12 +152,22 @@
         function showHome() {
             document.querySelectorAll('.role-section').forEach(s => s.classList.add('hidden'));
             document.getElementById('sec-home').classList.remove('hidden');
+            window.scrollTo(0,0);
         }
 
         function switchRole(role) {
+            if (role === 'ISTRUTTORE') {
+                let p = prompt("Password Istruttori:");
+                if (p !== PASS_INSTR) return;
+            }
+            if (role === 'RESPONSABILE') {
+                let p = prompt("Password Responsabile:");
+                if (p !== PASS_RESP) return;
+            }
             document.getElementById('sec-home').classList.add('hidden');
             document.querySelectorAll('.role-section').forEach(s => s.classList.add('hidden'));
             document.getElementById('sec-' + role.toLowerCase()).classList.remove('hidden');
+            window.scrollTo(0,0);
             caricaDati();
         }
 
@@ -179,104 +178,65 @@
                 anagrafica = data.anagrafica || [];
                 richieste = data.richieste || [];
                 renderUI();
-            } catch (e) { console.error("Errore API:", e); }
+            } catch (e) { console.error("Errore API", e); }
         }
 
         function renderUI() {
-            // Allievi dropdown
-            const sAll = document.getElementById('sel-allievi');
-            sAll.innerHTML = '<option value="">-- CHI SEI? --</option>' + 
-                anagrafica.filter(x => x.ruolo === "DISCENTE")
-                .map(x => `<option value="${x.nome}">${x.nome}</option>`).join('');
+            document.getElementById('sel-allievi').innerHTML = '<option value="">-- CHI SEI? --</option>' + anagrafica.filter(x => x.ruolo === "DISCENTE").map(x => `<option value="${x.nome}">${x.nome}</option>`).join('');
+            document.getElementById('sel-istruttori').innerHTML = '<option value="">-- TUO NOME --</option>' + anagrafica.filter(x => x.ruolo === "TRAINER").map(x => `<option value="${x.nome}">${x.nome}</option>`).join('');
+            
+            document.getElementById('tbody-responsabile').innerHTML = richieste.map(r => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-2 font-bold">${r.data}<br><span class="text-red-600">${r.ora}</span></td>
+                    <td class="p-2 font-black text-slate-500 uppercase">${r.allievo}</td>
+                    <td class="p-2 font-bold ${r.trainer ? 'text-green-600' : 'text-slate-300'}">${r.trainer || 'ATTESA'}</td>
+                    <td class="p-2 font-mono text-slate-400">${r.mezzo || '---'}</td>
+                </tr>`).reverse().join('');
 
-            // Istruttori dropdown
-            const sIst = document.getElementById('sel-istruttori');
-            sIst.innerHTML = '<option value="">-- SELEZIONA IL TUO NOME --</option>' + 
-                anagrafica.filter(x => x.ruolo === "TRAINER")
-                .map(x => `<option value="${x.nome}">${x.nome}</option>`).join('');
-
-            // Tabella Responsabile
-            const tbody = document.getElementById('tbody-responsabile');
-            tbody.innerHTML = richieste.map(r => `
-                <tr class="hover:bg-slate-50 transition border-b border-slate-50">
-                    <td class="py-4 px-2 font-bold">${r.data} <span class="text-red-600 ml-1">${r.ora}</span></td>
-                    <td class="py-4 px-2 uppercase font-black text-xs text-slate-500">${r.allievo}</td>
-                    <td class="py-4 px-2 uppercase font-bold text-xs ${r.trainer ? 'text-green-600' : 'text-slate-300'}">${r.trainer || 'In attesa'}</td>
-                    <td class="py-4 px-2 font-mono font-bold text-slate-400 text-xs">${r.mezzo || '---'}</td>
-                </tr>
-            `).reverse().join('');
-
-            // Container Istruttori
             const container = document.getElementById('container-richieste');
             const aperte = richieste.filter(r => r.stato === "APERTA");
-            if(aperte.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center p-20 bg-white rounded-3xl border-2 border-dashed border-slate-200 font-bold text-slate-300 uppercase tracking-widest text-sm">Nessuna richiesta disponibile</div>`;
-            } else {
-                container.innerHTML = aperte.map(r => `
-                    <div class="bg-white p-8 rounded-[2rem] shadow-lg border border-slate-50 hover:border-green-400 transition transform hover:-translate-y-1">
-                        <div class="flex justify-between items-center mb-6">
-                            <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">${r.data}</span>
-                            <div class="w-3 h-3 bg-green-500 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
-                        </div>
-                        <h3 class="text-2xl font-black text-slate-800 uppercase tracking-tighter leading-none mb-1">${r.allievo}</h3>
-                        <p class="text-3xl font-black text-green-600 mb-8">${r.ora}</p>
-                        <button onclick="accettaGuida('${r.id}', '${r.allievo}')" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-green-600 transition shadow-lg">Accetta Slot</button>
+            container.innerHTML = aperte.length === 0 ? '<div class="p-10 text-center font-bold text-slate-300 uppercase">Nessuna richiesta</div>' : 
+                aperte.map(r => `
+                <div class="bg-white p-5 rounded-3xl shadow-lg border border-slate-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[10px] font-black uppercase text-slate-400">${r.data}</span>
+                        <span class="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-black">APERTA</span>
                     </div>
-                `).join('');
-            }
+                    <h3 class="text-lg font-black text-slate-800 uppercase leading-none">${r.allievo}</h3>
+                    <p class="text-xl font-black text-green-600 my-3">${r.ora}</p>
+                    <button onclick="accettaGuida('${r.id}', '${r.allievo}')" class="w-full bg-slate-900 text-white py-3 rounded-2xl font-black text-sm">ACCETTA</button>
+                </div>`).join('');
         }
 
         async function inviaRichiesta() {
-            const data = {
-                azione: "PUBBLICA_RICHIESTA",
-                allievo: document.getElementById('sel-allievi').value,
-                giorno: document.getElementById('all-data').value,
-                oraInizio: document.getElementById('all-inizio').value,
-                oraFine: document.getElementById('all-fine').value
-            };
-            if(!data.allievo || !data.giorno || !data.oraInizio) return alert("Compila tutti i campi!");
-            await invia(data);
+            const d = { azione: "PUBBLICA_RICHIESTA", allievo: document.getElementById('sel-allievi').value, giorno: document.getElementById('all-data').value, oraInizio: document.getElementById('all-inizio').value, oraFine: document.getElementById('all-fine').value };
+            if(!d.allievo || !d.giorno || !d.oraInizio) return alert("Compila tutto");
+            await invia(d);
         }
 
         async function accettaGuida(id, allievo) {
-            const trainer = document.getElementById('sel-istruttori').value;
-            if(!trainer) return alert("Seleziona prima il tuo nome!");
-            if(confirm(`Confermi la guida con ${allievo}?`)) {
-                await invia({ azione: "ACCETTA_GUIDA", requestId: id, trainer: trainer, allievo: allievo });
-            }
+            const t = document.getElementById('sel-istruttori').value;
+            if(!t) return alert("Scegli il tuo nome");
+            if(confirm(`Confermi guida con ${allievo}?`)) await invia({ azione: "ACCETTA_GUIDA", requestId: id, trainer: t, allievo: allievo });
         }
 
         async function salvaAnagrafica() {
-            const data = {
-                azione: "ADD_ANAGRAFICA",
-                ruolo: document.getElementById('adm-ruolo').value,
-                nome: document.getElementById('adm-nome').value.toUpperCase(),
-                email: document.getElementById('adm-email').value,
-                cat: document.getElementById('adm-cat').value
-            };
-            if(!data.nome) return alert("Inserisci il nome!");
-            await invia(data);
+            const d = { azione: "ADD_ANAGRAFICA", ruolo: document.getElementById('adm-ruolo').value, nome: document.getElementById('adm-nome').value.toUpperCase(), email: document.getElementById('adm-email').value, cat: document.getElementById('adm-cat').value };
+            if(!d.nome) return alert("Manca nome");
+            await invia(d);
         }
 
         async function invia(p) {
-            try {
-                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
-                const text = await response.text();
-                alert(text);
-                caricaDati();
-            } catch (e) { alert("Errore connessione."); }
+            try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); alert(await r.text()); caricaDati(); } catch(e) { alert("Errore"); }
         }
 
         function checkProgress() {
-            const nome = document.getElementById('sel-allievi').value;
-            if(!nome) return;
-            const person = anagrafica.find(x => x.nome === nome);
-            const guideFatte = richieste.filter(r => r.allievo === nome && r.stato === "ASSEGNATA").length;
-            const target = person ? person.cat : '?';
-            document.getElementById('stat-allievo').innerText = `Guida ${guideFatte} di ${target === '5' ? '6' : '4'}`;
+            const n = document.getElementById('sel-allievi').value; if(!n) return;
+            const p = anagrafica.find(x => x.nome === n);
+            const f = richieste.filter(r => r.allievo === n && r.stato === "ASSEGNATA").length;
+            document.getElementById('stat-allievo').innerText = `GUIDA ${f} DI ${p?.cat === '5' ? '6' : '4'}`;
         }
-
-        // Forza la vista iniziale sulla Home
+        
         window.onload = showHome;
     </script>
 </body>
