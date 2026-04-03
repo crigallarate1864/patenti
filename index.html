@@ -3,171 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CRI Gallarate - Gestionale Patenti</title>
+    <title>CRI Gallarate - Gestione Patenti</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .cri-red { background-color: #ed1c24; }
         .hidden { display: none; }
-        /* Ottimizzazione per mobile: pulsanti grandi e feedback al tocco */
-        button:active { transform: scale(0.96); transition: 0.1s; }
-        input, select, textarea { font-size: 16px !important; } /* Evita zoom automatico su iOS */
+        input, select { font-size: 16px !important; }
         .card-home { transition: transform 0.2s; -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-20 md:pb-0">
+<body class="bg-slate-50 min-h-screen pb-10">
 
     <header class="bg-white shadow-sm p-3 sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3 cursor-pointer" onclick="showHome()">
                 <img src="logo.png" alt="CRI" onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='flex'" class="h-10 w-auto">
-                <div id="alt-logo" class="h-10 w-10 cri-red text-white rounded-full items-center justify-center font-bold text-xs hidden">CRI</div>
-                
+                <div id="alt-logo" class="h-10 w-10 cri-red text-white rounded-full items-center justify-center font-bold text-[10px] hidden">CRI</div>
                 <div class="border-l border-slate-200 pl-3">
-                    <h1 class="font-black text-sm md:text-xl tracking-tighter text-slate-800 uppercase">Gestionale Patenti</h1>
-                    <p class="text-[8px] md:text-[10px] uppercase font-bold text-red-600 tracking-widest leading-none">CRI Gallarate</p>
+                    <h1 class="font-black text-sm tracking-tighter text-slate-800 uppercase leading-none">Gestionale Patenti</h1>
+                    <p class="text-[8px] uppercase font-bold text-red-600 tracking-widest mt-1">CRI Gallarate</p>
                 </div>
             </div>
-            <button onclick="showHome()" class="bg-slate-100 p-2 rounded-full text-slate-500 hover:text-red-600 transition">
-                <i class="fas fa-home"></i>
-            </button>
+            <button onclick="showHome()" class="bg-slate-100 p-2 rounded-full text-slate-500"><i class="fas fa-home"></i></button>
         </div>
     </header>
 
     <main class="container mx-auto p-4">
 
-        <section id="sec-home" class="py-6 md:py-12">
-            <div class="text-center mb-8 md:mb-12">
-                <h2 class="text-2xl md:text-3xl font-black text-slate-800 uppercase italic">Area Formazione</h2>
-                <p class="text-slate-500 text-sm">Scegli il tuo profilo per accedere</p>
+        <section id="sec-home" class="py-10 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div onclick="switchRole('ALLIEVO')" class="card-home bg-white p-8 rounded-[2rem] shadow-xl border-b-8 border-blue-500 cursor-pointer text-center">
+                <div class="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"><i class="fas fa-user-graduate"></i></div>
+                <h3 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Area Allievi</h3>
+                <p class="text-xs text-slate-400 italic">Inoltra e controlla guide</p>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 max-w-6xl mx-auto">
-                <div onclick="switchRole('ALLIEVO')" class="card-home bg-white p-6 md:p-8 rounded-3xl shadow-lg border-b-4 border-blue-500 cursor-pointer text-center">
-                    <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fas fa-user-graduate"></i></div>
-                    <h3 class="text-xl font-black text-slate-800 uppercase">Allievi</h3>
-                    <p class="text-xs text-slate-400 mt-1">Prenota le tue guide</p>
-                </div>
+            <div onclick="switchRole('ISTRUTTORE')" class="card-home bg-white p-8 rounded-[2rem] shadow-xl border-b-8 border-green-500 cursor-pointer text-center">
+                <div class="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"><i class="fas fa-chalkboard-teacher"></i></div>
+                <h3 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Area Istruttori</h3>
+                <p class="text-xs text-slate-400 italic">Accetta e visualizza impegni</p>
+            </div>
+            <div onclick="switchRole('RESPONSABILE')" class="card-home bg-white p-8 rounded-[2rem] shadow-xl border-b-8 border-red-600 cursor-pointer text-center">
+                <div class="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"><i class="fas fa-user-shield"></i></div>
+                <h3 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Admin</h3>
+                <p class="text-xs text-slate-400 italic">Gestione completa</p>
+            </div>
+        </section>
 
-                <div onclick="switchRole('ISTRUTTORE')" class="card-home bg-white p-6 md:p-8 rounded-3xl shadow-lg border-b-4 border-green-500 cursor-pointer text-center">
-                    <div class="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fas fa-chalkboard-teacher"></i></div>
-                    <h3 class="text-xl font-black text-slate-800 uppercase">Istruttori</h3>
-                    <p class="text-xs text-slate-400 mt-1">Accetta richieste</p>
+        <section id="sec-allievo" class="role-section hidden space-y-6">
+            <div class="max-w-xl mx-auto bg-white p-6 rounded-3xl shadow-xl border-t-8 border-blue-500">
+                <h2 class="text-xl font-black mb-4 uppercase text-center italic">Inoltra Disponibilità</h2>
+                <div class="flex flex-col gap-4">
+                    <select id="sel-allievi" onchange="updatePersonalView()" class="w-full border-2 p-3 rounded-2xl font-bold bg-slate-50"></select>
+                    <input id="all-data" type="date" class="w-full border-2 p-3 rounded-2xl font-bold bg-slate-50">
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                        <input id="all-inizio" type="time" class="border-2 p-3 rounded-2xl font-bold bg-slate-50">
+                        <input id="all-fine" type="time" class="border-2 p-3 rounded-2xl font-bold bg-slate-50">
+                    </div>
+                    <div id="stat-allievo" class="p-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-center uppercase text-[10px]">Seleziona il tuo nome</div>
+                    <button onclick="inviaRichiesta()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg">INOLTRA PROPOSTA</button>
                 </div>
+            </div>
 
-                <div onclick="switchRole('RESPONSABILE')" class="card-home bg-white p-6 md:p-8 rounded-3xl shadow-lg border-b-4 border-red-600 cursor-pointer text-center">
-                    <div class="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fas fa-user-shield"></i></div>
-                    <h3 class="text-xl font-black text-slate-800 uppercase">Responsabile</h3>
-                    <p class="text-xs text-slate-400 mt-1">Gestione completa</p>
+            <div id="personal-allievo-box" class="max-w-4xl mx-auto bg-white p-5 rounded-3xl shadow-lg border border-slate-100">
+                <h3 class="font-black uppercase text-slate-800 mb-3 ml-2 italic text-sm">Le Mie Guide (Inoltrate e Confermate)</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-[11px]">
+                        <thead class="bg-slate-50 text-slate-400 font-black uppercase">
+                            <tr><th class="p-2">Data/Ora</th><th class="p-2">Istruttore</th><th class="p-2">Stato</th><th class="p-2">Mezzo</th></tr>
+                        </thead>
+                        <tbody id="tbody-allievo-personal" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-istruttore" class="role-section hidden space-y-6">
+            <div class="max-w-4xl mx-auto">
+                <select id="sel-istruttori" onchange="updatePersonalView()" class="w-full border-2 p-4 rounded-2xl font-bold bg-white shadow-md mb-6"></select>
+                
+                <h3 class="font-black uppercase text-green-600 mb-3 ml-2 italic text-sm">Proposte Inoltrate (Da Accettare)</h3>
+                <div id="container-richieste" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8"></div>
+
+                <h3 class="font-black uppercase text-slate-800 mb-3 ml-2 italic text-sm">I Miei Impegni (Guide Accettate)</h3>
+                <div class="bg-white p-5 rounded-3xl shadow-lg overflow-x-auto">
+                    <table class="w-full text-left text-[11px]">
+                        <thead class="bg-slate-50 text-slate-400 font-black uppercase tracking-widest">
+                            <tr><th class="p-2">Data/Ora</th><th class="p-2">Allievo</th><th class="p-2">Mezzo</th></tr>
+                        </thead>
+                        <tbody id="tbody-istruttore-personal" class="divide-y font-medium text-slate-700"></tbody>
+                    </table>
                 </div>
             </div>
         </section>
 
         <section id="sec-responsabile" class="role-section hidden">
-            <div class="flex flex-col gap-6">
-                <div class="bg-white p-5 rounded-3xl shadow-lg border border-slate-100">
-                    <h2 class="text-lg font-black mb-4 uppercase flex items-center gap-2"><i class="fas fa-plus-circle text-red-600"></i> Nuova Anagrafica</h2>
-                    <div class="flex flex-col gap-3">
-                        <select id="adm-ruolo" class="w-full bg-slate-50 border-2 border-slate-100 p-3 rounded-2xl font-bold">
-                            <option value="TRAINER">Trainer</option>
-                            <option value="DISCENTE">Discente</option>
-                        </select>
-                        <input id="adm-nome" type="text" placeholder="COGNOME E NOME" class="w-full bg-slate-50 border-2 border-slate-100 p-3 rounded-2xl uppercase font-bold">
-                        <input id="adm-email" type="email" placeholder="Email (obbligatoria)" class="w-full bg-slate-50 border-2 border-slate-100 p-3 rounded-2xl">
-                        <select id="adm-cat" class="w-full bg-slate-50 border-2 border-slate-100 p-3 rounded-2xl font-bold">
-                            <option value="4">Patente 4</option>
-                            <option value="5">Patente 5</option>
-                        </select>
-                        <button onclick="salvaAnagrafica()" class="w-full cri-red text-white py-4 rounded-2xl font-black shadow-lg">SALVA</button>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 text-[11px]">
+                <div class="bg-white p-5 rounded-3xl shadow-lg h-fit">
+                    <h3 class="font-black mb-4 uppercase">Gestione Anagrafica</h3>
+                    <div class="flex flex-col gap-2">
+                        <select id="adm-ruolo" class="border p-2 rounded-xl"><option value="TRAINER">TRAINER</option><option value="DISCENTE">DISCENTE</option><option value="RESPONSABILE">RESPONSABILE</option></select>
+                        <input id="adm-nome" type="text" placeholder="COGNOME NOME" class="border p-2 rounded-xl uppercase font-bold">
+                        <input id="adm-email" type="email" placeholder="email@cri.it" class="border p-2 rounded-xl">
+                        <select id="adm-cat" class="border p-2 rounded-xl"><option value="4">PAT 4</option><option value="5">PAT 5</option></select>
+                        <button onclick="salvaAnagrafica()" class="cri-red text-white py-3 rounded-xl font-bold uppercase">Aggiungi</button>
                     </div>
                 </div>
-                <div class="bg-white p-5 rounded-3xl shadow-lg overflow-hidden">
-                    <h2 class="text-lg font-black mb-4 uppercase">Registro Guide</h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-[11px] md:text-sm">
-                            <thead class="border-b bg-slate-50">
-                                <tr class="text-slate-400 font-bold uppercase"><th class="p-2">Data/Ora</th><th class="p-2">Allievo</th><th class="p-2">Istruttore</th><th class="p-2">Mezzo</th></tr>
-                            </thead>
-                            <tbody id="tbody-responsabile" class="divide-y font-medium"></tbody>
-                        </table>
-                    </div>
+                <div class="lg:col-span-2 bg-white p-5 rounded-3xl shadow-lg overflow-x-auto">
+                    <table class="w-full text-left"><thead class="border-b font-black uppercase text-[10px]"><tr><th class="p-2">Data</th><th class="p-2">Allievo</th><th class="p-2">Trainer</th><th class="p-2">Mezzo</th></tr></thead><tbody id="tbody-responsabile" class="divide-y"></tbody></table>
                 </div>
             </div>
         </section>
-
-        <section id="sec-allievo" class="role-section hidden">
-            <div class="max-w-xl mx-auto bg-white p-6 rounded-3xl shadow-xl border-t-8 border-blue-500">
-                <h2 class="text-xl font-black mb-4 uppercase text-center">Richiesta Guida</h2>
-                <div class="flex flex-col gap-4">
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Tuo Nome</label>
-                        <select id="sel-allievi" onchange="checkProgress()" class="w-full bg-slate-50 border-2 p-3 rounded-2xl font-bold"></select>
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Giorno</label>
-                        <input id="all-data" type="date" class="w-full bg-slate-50 border-2 p-3 rounded-2xl font-bold">
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Dalle ore</label>
-                            <input id="all-inizio" type="time" class="w-full bg-slate-50 border-2 p-3 rounded-2xl font-bold text-center">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Alle ore</label>
-                            <input id="all-fine" type="time" class="w-full bg-slate-50 border-2 p-3 rounded-2xl font-bold text-center">
-                        </div>
-                    </div>
-                    <div id="stat-allievo" class="p-4 bg-blue-50 rounded-2xl font-black text-blue-700 text-center uppercase text-sm italic">Scegli il tuo nome</div>
-                    <button onclick="inviaRichiesta()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg">PUBBLICA RICHIESTA</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="sec-istruttore" class="role-section hidden">
-            <div class="flex flex-col gap-4 mb-6">
-                <h2 class="text-xl font-black uppercase text-center">Guide Disponibili</h2>
-                <select id="sel-istruttori" class="w-full bg-white border-2 p-3 rounded-2xl font-bold shadow-sm"></select>
-            </div>
-            <div id="container-richieste" class="flex flex-col gap-4">
-                </div>
-        </section>
-
     </main>
-
-    <footer class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2 flex justify-around text-[10px] font-bold text-slate-400 z-50">
-        <button onclick="showHome()" class="flex flex-col items-center gap-1"><i class="fas fa-home text-lg"></i>HOME</button>
-        <button onclick="switchRole('ALLIEVO')" class="flex flex-col items-center gap-1"><i class="fas fa-user-graduate text-lg"></i>ALLIEVI</button>
-        <button onclick="switchRole('ISTRUTTORE')" class="flex flex-col items-center gap-1"><i class="fas fa-chalkboard-teacher text-lg"></i>TRAINER</button>
-        <button onclick="switchRole('RESPONSABILE')" class="flex flex-col items-center gap-1"><i class="fas fa-user-shield text-lg"></i>ADMIN</button>
-    </footer>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxo4M0vooFKqftFmo7tt6z13mQX6yw34qBI6ZZYvzCiOKZ0_etfb3UdS-dbUcvnGDKj/exec";
         const PASS_INSTR = "Guide26!";
         const PASS_RESP = "Pat3nti26!";
 
-        let anagrafica = [];
-        let richieste = [];
+        let anagrafica = []; let richieste = [];
 
-        function showHome() {
-            document.querySelectorAll('.role-section').forEach(s => s.classList.add('hidden'));
-            document.getElementById('sec-home').classList.remove('hidden');
-            window.scrollTo(0,0);
-        }
+        function showHome() { document.querySelectorAll('.role-section').forEach(s => s.classList.add('hidden')); document.getElementById('sec-home').classList.remove('hidden'); }
 
         function switchRole(role) {
-            if (role === 'ISTRUTTORE') {
-                let p = prompt("Password Istruttori:");
-                if (p !== PASS_INSTR) return;
-            }
-            if (role === 'RESPONSABILE') {
-                let p = prompt("Password Responsabile:");
-                if (p !== PASS_RESP) return;
-            }
-            document.getElementById('sec-home').classList.add('hidden');
+            if (role === 'ISTRUTTORE') { let p = prompt("Password Istruttori:"); if (p !== PASS_INSTR) return; }
+            if (role === 'RESPONSABILE') { let p = prompt("Password Responsabile:"); if (p !== PASS_RESP) return; }
             document.querySelectorAll('.role-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('sec-home').classList.add('hidden');
             document.getElementById('sec-' + role.toLowerCase()).classList.remove('hidden');
-            window.scrollTo(0,0);
             caricaDati();
         }
 
@@ -178,64 +140,88 @@
                 anagrafica = data.anagrafica || [];
                 richieste = data.richieste || [];
                 renderUI();
-            } catch (e) { console.error("Errore API", e); }
+                updatePersonalView();
+            } catch (e) { console.error(e); }
         }
 
         function renderUI() {
             document.getElementById('sel-allievi').innerHTML = '<option value="">-- CHI SEI? --</option>' + anagrafica.filter(x => x.ruolo === "DISCENTE").map(x => `<option value="${x.nome}">${x.nome}</option>`).join('');
             document.getElementById('sel-istruttori').innerHTML = '<option value="">-- TUO NOME --</option>' + anagrafica.filter(x => x.ruolo === "TRAINER").map(x => `<option value="${x.nome}">${x.nome}</option>`).join('');
             
+            // ADMIN TABLE
             document.getElementById('tbody-responsabile').innerHTML = richieste.map(r => `
-                <tr class="hover:bg-slate-50 transition">
-                    <td class="p-2 font-bold">${r.data}<br><span class="text-red-600">${r.ora}</span></td>
-                    <td class="p-2 font-black text-slate-500 uppercase">${r.allievo}</td>
-                    <td class="p-2 font-bold ${r.trainer ? 'text-green-600' : 'text-slate-300'}">${r.trainer || 'ATTESA'}</td>
+                <tr class="hover:bg-slate-50 border-b">
+                    <td class="p-2 font-bold">${r.data}<br>${r.ora}</td>
+                    <td class="p-2 uppercase font-black text-slate-500">${r.allievo}</td>
+                    <td class="p-2 uppercase font-bold ${r.trainer ? 'text-green-600' : 'text-slate-300'}">${r.trainer || 'INOLTRATA'}</td>
                     <td class="p-2 font-mono text-slate-400">${r.mezzo || '---'}</td>
                 </tr>`).reverse().join('');
 
+            // OPEN REQUESTS FOR TRAINERS
             const container = document.getElementById('container-richieste');
             const aperte = richieste.filter(r => r.stato === "APERTA");
-            container.innerHTML = aperte.length === 0 ? '<div class="p-10 text-center font-bold text-slate-300 uppercase">Nessuna richiesta</div>' : 
+            container.innerHTML = aperte.length === 0 ? '<div class="p-10 text-center font-bold text-slate-300 uppercase">Nessuna proposta</div>' : 
                 aperte.map(r => `
-                <div class="bg-white p-5 rounded-3xl shadow-lg border border-slate-100">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] font-black uppercase text-slate-400">${r.data}</span>
-                        <span class="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-black">APERTA</span>
-                    </div>
-                    <h3 class="text-lg font-black text-slate-800 uppercase leading-none">${r.allievo}</h3>
-                    <p class="text-xl font-black text-green-600 my-3">${r.ora}</p>
-                    <button onclick="accettaGuida('${r.id}', '${r.allievo}')" class="w-full bg-slate-900 text-white py-3 rounded-2xl font-black text-sm">ACCETTA</button>
+                <div class="bg-white p-4 rounded-3xl shadow-md border border-slate-100">
+                    <div class="flex justify-between text-[9px] font-black uppercase text-slate-400"><span>${r.data}</span><span class="text-blue-500">PROPOSTA</span></div>
+                    <h3 class="text-md font-black text-slate-800 uppercase mt-1 leading-none">${r.allievo}</h3>
+                    <p class="text-lg font-black text-green-600 my-2">${r.ora}</p>
+                    <button onclick="accettaGuida('${r.id}', '${r.allievo}')" class="w-full bg-slate-900 text-white py-2 rounded-xl font-black text-[10px] uppercase">Accetta</button>
                 </div>`).join('');
         }
 
+        function updatePersonalView() {
+            const allievoNome = document.getElementById('sel-allievi').value;
+            const trainerNome = document.getElementById('sel-istruttori').value;
+
+            // VISTA ALLIEVO
+            if(allievoNome) {
+                const mie = richieste.filter(r => r.allievo === allievoNome && (r.stato === "ASSEGNATA" || r.stato === "APERTA"));
+                document.getElementById('tbody-allievo-personal').innerHTML = mie.map(r => `
+                    <tr class="border-b">
+                        <td class="p-2 font-bold">${r.data} ${r.ora}</td>
+                        <td class="p-2 uppercase text-slate-500">${r.trainer || 'In attesa'}</td>
+                        <td class="p-2"><span class="px-2 py-0.5 rounded-full font-black uppercase text-[8px] ${r.stato==='ASSEGNATA'?'bg-green-100 text-green-700':'bg-blue-100 text-blue-700'}">${r.stato==='ASSEGNATA'?'CONFERMATA':'INOLTRATA'}</span></td>
+                        <td class="p-2 font-mono font-bold text-red-600">${r.mezzo || '--'}</td>
+                    </tr>`).reverse().join('');
+                
+                const p = anagrafica.find(x => x.nome === allievoNome);
+                const fatte = richieste.filter(r => r.allievo === allievoNome && r.stato === "ASSEGNATA").length;
+                document.getElementById('stat-allievo').innerText = `GUIDA ${fatte} DI ${p?.cat === '5' ? '6' : '4'}`;
+            }
+
+            // VISTA ISTRUTTORE
+            if(trainerNome) {
+                const mie = richieste.filter(r => r.trainer === trainerNome && r.stato === "ASSEGNATA");
+                document.getElementById('tbody-istruttore-personal').innerHTML = mie.map(r => `
+                    <tr class="border-b">
+                        <td class="p-2 font-bold">${r.data} ${r.ora}</td>
+                        <td class="p-2 uppercase font-black">${r.allievo}</td>
+                        <td class="p-2 font-mono text-red-600 font-black">${r.mezzo || 'ASSEGNAZIONE...'}</td>
+                    </tr>`).reverse().join('');
+            }
+        }
+
+        // AZIONI AJAX
         async function inviaRichiesta() {
             const d = { azione: "PUBBLICA_RICHIESTA", allievo: document.getElementById('sel-allievi').value, giorno: document.getElementById('all-data').value, oraInizio: document.getElementById('all-inizio').value, oraFine: document.getElementById('all-fine').value };
-            if(!d.allievo || !d.giorno || !d.oraInizio) return alert("Compila tutto");
+            if(!d.allievo || !d.giorno || !d.oraInizio) return alert("Compila tutto!");
             await invia(d);
         }
 
         async function accettaGuida(id, allievo) {
             const t = document.getElementById('sel-istruttori').value;
-            if(!t) return alert("Scegli il tuo nome");
-            if(confirm(`Confermi guida con ${allievo}?`)) await invia({ azione: "ACCETTA_GUIDA", requestId: id, trainer: t, allievo: allievo });
+            if(!t) return alert("Seleziona il tuo nome istruttore!");
+            if(confirm(`Accetti la guida di ${allievo}?`)) await invia({ azione: "ACCETTA_GUIDA", requestId: id, trainer: t, allievo: allievo });
         }
 
         async function salvaAnagrafica() {
             const d = { azione: "ADD_ANAGRAFICA", ruolo: document.getElementById('adm-ruolo').value, nome: document.getElementById('adm-nome').value.toUpperCase(), email: document.getElementById('adm-email').value, cat: document.getElementById('adm-cat').value };
-            if(!d.nome) return alert("Manca nome");
+            if(!d.nome) return alert("Manca nome!");
             await invia(d);
         }
 
-        async function invia(p) {
-            try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); alert(await r.text()); caricaDati(); } catch(e) { alert("Errore"); }
-        }
-
-        function checkProgress() {
-            const n = document.getElementById('sel-allievi').value; if(!n) return;
-            const p = anagrafica.find(x => x.nome === n);
-            const f = richieste.filter(r => r.allievo === n && r.stato === "ASSEGNATA").length;
-            document.getElementById('stat-allievo').innerText = `GUIDA ${f} DI ${p?.cat === '5' ? '6' : '4'}`;
-        }
+        async function invia(p) { try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); alert(await r.text()); caricaDati(); } catch(e) { alert("Errore"); } }
         
         window.onload = showHome;
     </script>
