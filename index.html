@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestionale Patenti - CRI Gallarate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <nav class="bg-red-700 text-white p-4 shadow-xl mb-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="font-bold text-xl">CRI GALLARATE - Portale Patenti</h1>
+            <div class="flex gap-4">
+                <button onclick="tab('visite')" class="bg-white/10 px-4 py-1 rounded">Visite Mediche</button>
+                <button onclick="tab('guide')" class="bg-white/10 px-4 py-1 rounded">Guide Pratiche</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4">
+        
+        <section id="visite" class="tab-content">
+            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-500">
+                <h2 class="text-xl font-bold mb-4">Programmazione Visita Medica</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input id="v-nome" type="text" placeholder="Nome Volontario" class="border p-3 rounded-lg">
+                    <input id="v-data" type="datetime-local" class="border p-3 rounded-lg">
+                    <select id="v-cat" class="border p-3 rounded-lg">
+                        <option value="3">Patente 3</option>
+                        <option value="4">Patente 4</option>
+                        <option value="5">Patente 5 (10 min + Riflessi)</option>
+                    </select>
+                    <textarea id="v-prescrizioni" placeholder="Prescrizioni (es. lenti, limitazioni...)" class="border p-3 rounded-lg"></textarea>
+                    <button onclick="salvaVisita()" class="md:col-span-2 bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700">Registra Visita</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="guide" class="tab-content hidden">
+            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500">
+                <h2 class="text-xl font-bold mb-4">Prenotazione Guida Addestrativa</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input id="g-nome" type="text" placeholder="Nome Volontario" class="border p-3 rounded-lg">
+                    <select id="g-cat" class="border p-3 rounded-lg" onchange="updateGuideCount()">
+                        <option value="4">Patente 4 (Obbligo: 4 guide)</option>
+                        <option value="5">Patente 5 (Obbligo: 6 guide)</option>
+                    </select>
+                    <select id="g-istruttore" class="border p-3 rounded-lg">
+                        <option value="istruttore1@email.it">Istruttore Rossi</option>
+                        <option value="istruttore2@email.it">Istruttore Bianchi</option>
+                    </select>
+                    <input id="g-data" type="datetime-local" class="border p-3 rounded-lg">
+                    <input id="g-mezzo" type="text" placeholder="Targa / Mezzo" class="border p-3 rounded-lg">
+                    
+                    <button onclick="salvaGuida()" class="md:col-span-2 bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Invia mail all'Istruttore e Salva</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const GAS_URL = "INSERISCI_QUI_URL_APPS_SCRIPT";
+
+        function tab(name) {
+            document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
+            document.getElementById(name).classList.remove('hidden');
+        }
+
+        async function salvaVisita() {
+            const payload = {
+                tipoPratica: "VISITA",
+                volontario: document.getElementById('v-nome').value,
+                dataOra: document.getElementById('v-data').value,
+                categoria: document.getElementById('v-cat').value,
+                prescrizioni: document.getElementById('v-prescrizioni').value
+            };
+            await invia(payload);
+        }
+
+        async function salvaGuida() {
+            const payload = {
+                tipoPratica: "GUIDA",
+                volontario: document.getElementById('g-nome').value,
+                istruttore: document.getElementById('g-istruttore').options[document.getElementById('g-istruttore').selectedIndex].text,
+                emailIstruttore: document.getElementById('g-istruttore').value,
+                dataOra: document.getElementById('g-data').value,
+                mezzo: document.getElementById('g-mezzo').value
+            };
+            await invia(payload);
+        }
+
+        async function invia(p) {
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Importante per Google Scripts
+                    body: JSON.stringify(p)
+                });
+                alert("Operazione completata con successo!");
+            } catch (e) {
+                alert("Errore nell'invio: " + e);
+            }
+        }
+    </script>
+</body>
+</html>
