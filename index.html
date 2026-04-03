@@ -2,89 +2,262 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>CRI Gallarate - Gestione Guide</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRI Gallarate - Gestionale Patenti</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .cri-red { background-color: #ed1c24; }
+        .tab-active { border-bottom: 4px solid #ed1c24; color: #ed1c24; }
+        .hidden { display: none; }
+    </style>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-50 font-sans">
 
-    <nav class="bg-red-800 text-white p-4 font-bold flex justify-between shadow-lg">
-        <span>CRI GALLARATE - PORTALE GUIDE</span>
-        <div class="space-x-4 text-sm">
-            <button onclick="view('responsabile')" class="opacity-70 hover:opacity-100">Responsabile</button>
-            <button onclick="view('trainer')" class="opacity-70 hover:opacity-100">Istruttori</button>
-            <button onclick="view('studente')" class="opacity-70 hover:opacity-100">Allievi</button>
-        </div>
-    </nav>
-
-    <section id="trainer" class="p-6 hidden">
-        <div class="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow border-t-4 border-red-600">
-            <h2 class="text-xl font-black mb-4 uppercase">Pubblica Disponibilità</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <input id="t-nome" placeholder="Tuo Nome" class="border p-2 rounded">
-                <input id="t-email" placeholder="Tua Email" class="border p-2 rounded">
-                <input id="t-data" type="date" class="border p-2 rounded">
-                <div class="flex gap-2">
-                    <input id="t-da" type="time" class="border p-2 rounded w-full">
-                    <input id="t-a" type="time" class="border p-2 rounded w-full">
+    <header class="cri-red text-white shadow-lg p-4 sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-1 rounded-full text-red-600 font-bold text-xl w-10 h-10 flex items-center justify-center">CRI</div>
+                <div>
+                    <h1 class="font-bold leading-none tracking-tight">GALLARATE</h1>
+                    <p class="text-[10px] uppercase font-semibold opacity-80 tracking-widest">Ufficio Patenti</p>
                 </div>
-                <button onclick="creaSessione()" class="col-span-2 bg-red-600 text-white font-bold py-3 rounded">CREA SLOT DA 75 MINUTI</button>
             </div>
+            <nav id="nav-roles" class="flex gap-2 text-sm font-bold">
+                <button onclick="switchRole('RESPONSABILE')" class="hover:bg-red-700 px-3 py-1 rounded transition">RESPONSABILE</button>
+                <button onclick="switchRole('ISTRUTTORE')" class="hover:bg-red-700 px-3 py-1 rounded transition">ISTRUTTORI</button>
+                <button onclick="switchRole('ALLIEVO')" class="hover:bg-red-700 px-3 py-1 rounded transition">ALLIEVI</button>
+            </nav>
         </div>
-    </section>
+    </header>
 
-    <section id="studente" class="p-6 hidden">
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow border-t-4 border-blue-600">
-            <h2 class="text-xl font-black mb-4 uppercase">Prenota Guida</h2>
-            <div class="flex gap-4 mb-6">
-                <input id="s-nome" placeholder="Tuo Nome e Cognome" class="border p-2 flex-1 rounded">
-                <select id="s-cat" class="border p-2 rounded">
-                    <option value="4">Patente 4 (4 guide)</option>
-                    <option value="5">Patente 5 (6 guide)</option>
-                </select>
-            </div>
-            <div id="lista-slot" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <p class="text-gray-400 italic">Caricamento slot disponibili...</p>
-            </div>
-        </div>
-    </section>
+    <main class="container mx-auto p-4 lg:p-8">
 
-    <section id="responsabile" class="p-6">
-        <div class="max-w-5xl mx-auto bg-white p-6 rounded-xl shadow border-t-4 border-gray-800">
-            <h2 class="text-xl font-black mb-4 uppercase">Gestione Mezzi e Planning</h2>
-            <table class="w-full text-left text-sm">
-                <thead>
-                    <tr class="bg-gray-100 uppercase text-[10px]">
-                        <th class="p-2">Data/Ora</th>
-                        <th class="p-2">Trainer</th>
-                        <th class="p-2">Discente</th>
-                        <th class="p-2">Mezzo (Targa CRI)</th>
-                        <th class="p-2">Azione</th>
-                    </tr>
-                </thead>
-                <tbody id="tabella-responsabile">
-                    </tbody>
-            </table>
-        </div>
-    </section>
+        <section id="sec-responsabile" class="role-section">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-black mb-6 flex items-center gap-2"><i class="fas fa-user-plus text-red-600"></i> AGGIUNGI ANAGRAFICA</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ruolo</label>
+                            <select id="adm-ruolo" class="w-full border-2 p-3 rounded-xl focus:border-red-500 outline-none">
+                                <option value="TRAINER">Trainer (Istruttore)</option>
+                                <option value="DISCENTE">Discente (Allievo)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Cognome e Nome</label>
+                            <input id="adm-nome" type="text" placeholder="ROSSI MARIO" class="w-full border-2 p-3 rounded-xl uppercase">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email (Obbligatoria per Trainer)</label>
+                            <input id="adm-email" type="email" placeholder="nome.cognome@cri.it" class="w-full border-2 p-3 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Categoria (Solo Allievi)</label>
+                            <select id="adm-cat" class="w-full border-2 p-3 rounded-xl">
+                                <option value="4">Patente 4 (4 guide)</option>
+                                <option value="5">Patente 5 (6 guide)</option>
+                            </select>
+                        </div>
+                        <button onclick="salvaAnagrafica()" class="w-full cri-red text-white py-4 rounded-xl font-bold shadow-md hover:bg-red-700 transition">SALVA NOMINATIVO</button>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-black mb-6 uppercase">Monitoraggio Guide & Mezzi</h2>
+                    <div class="overflow-x-auto text-sm">
+                        <table class="w-full text-left">
+                            <thead class="border-b">
+                                <tr class="text-slate-400">
+                                    <th class="py-2">Data/Ora</th>
+                                    <th class="py-2">Allievo</th>
+                                    <th class="py-2">Istruttore</th>
+                                    <th class="py-2">Mezzo / Targa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-responsabile" class="divide-y">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-allievo" class="role-section hidden">
+            <div class="max-w-3xl mx-auto bg-white p-8 rounded-3xl shadow-xl border border-blue-100">
+                <div class="text-center mb-8">
+                    <span class="bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">Pannello Allievi</span>
+                    <h2 class="text-2xl font-black mt-2 uppercase">Proponi le tue Guide</h2>
+                    <p class="text-slate-500 text-sm italic">Fasce minime di 75 minuti</p>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Seleziona il tuo Nome</label>
+                            <select id="sel-allievi" class="w-full border-2 p-4 rounded-2xl font-bold text-slate-700 bg-slate-50 border-slate-200 outline-none focus:border-blue-500">
+                                </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Giorno della Guida</label>
+                            <input id="all-data" type="date" class="w-full border-2 p-4 rounded-2xl font-bold bg-slate-50 outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Dalle ore</label>
+                            <input id="all-inizio" type="time" class="w-full border-2 p-4 rounded-2xl font-bold bg-slate-50 outline-none focus:border-blue-500 text-center">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Alle ore</label>
+                            <input id="all-fine" type="time" class="w-full border-2 p-4 rounded-2xl font-bold bg-slate-50 outline-none focus:border-blue-500 text-center">
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-2xl border-2 border-dashed border-slate-200 text-center">
+                        <p class="text-xs text-slate-400 font-bold uppercase mb-2">Stato del tuo percorso:</p>
+                        <div id="stat-allievo" class="text-xl font-black text-blue-600 uppercase">Seleziona un nome per vedere le guide fatte</div>
+                    </div>
+
+                    <button onclick="inviaRichiesta()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-blue-100 hover:bg-blue-700 transition transform active:scale-95">
+                        PUBBLICA DISPONIBILITÀ
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-istruttore" class="role-section hidden">
+            <div class="max-w-5xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <h2 class="text-2xl font-black uppercase"><i class="fas fa-calendar-check text-green-600 mr-2"></i> Richieste Guide Aperte</h2>
+                    <select id="sel-istruttori" class="border-2 p-3 rounded-xl font-bold text-slate-700 outline-none focus:border-green-500">
+                        </select>
+                </div>
+
+                <div id="container-richieste" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="p-8 bg-slate-200 rounded-3xl text-center text-slate-400 italic">Caricamento richieste in corso...</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
 
     <script>
-        function view(id) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
+        // CONFIGURAZIONE: Incolla qui l'URL della tua App Web distribuita con Apps Script
+        const API_URL = "INSERISCI_QUI_IL_TUO_URL_DI_APPS_SCRIPT";
+
+        let anagrafica = [];
+        let richieste = [];
+
+        // Funzione per navigare tra i ruoli
+        function switchRole(role) {
+            document.querySelectorAll('.role-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('sec-' + role.toLowerCase()).classList.remove('hidden');
+            caricaDati();
         }
 
-        async function creaSessione() {
-            const data = {
-                azione: "CREA_SESSIONE",
-                trainer: document.getElementById('t-nome').value,
-                email: document.getElementById('t-email').value,
-                giorno: document.getElementById('t-data').value,
-                oraInizio: document.getElementById('t-da').value,
-                oraFine: document.getElementById('t-a').value
-            };
-            // Invio a Google Apps Script
-            alert("Richiesta inviata! Il sistema genererà slot da 75 minuti.");
+        // Simula il caricamento dati dallo Sheet (da collegare a doGet())
+        async function caricaDati() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                anagrafica = data.anagrafica;
+                richieste = data.richieste;
+                renderUI();
+            } catch (e) {
+                console.log("Errore caricamento dati. Assicurati che l'API_URL sia corretto.");
+            }
         }
+
+        function renderUI() {
+            // Popola Dropdown Allievi
+            const sAll = document.getElementById('sel-allievi');
+            sAll.innerHTML = anagrafica.filter(x => x.ruolo === "DISCENTE")
+                .map(x => `<option value="${x.nome}">${x.nome} (Pat. ${x.cat})</option>`).join('');
+
+            // Popola Dropdown Istruttori
+            const sIst = document.getElementById('sel-istruttori');
+            sIst.innerHTML = `<option value="">-- SELEZIONA IL TUO NOME --</option>` + 
+                anagrafica.filter(x => x.ruolo === "TRAINER")
+                .map(x => `<option value="${x.nome}">${x.nome}</option>`).join('');
+
+            // Renderizza Richieste per Istruttori
+            const gridRichieste = document.getElementById('container-richieste');
+            const aperte = richieste.filter(r => r.stato === "APERTA");
+            
+            if(aperte.length === 0) {
+                gridRichieste.innerHTML = `<div class="col-span-full text-center p-12 bg-slate-100 rounded-3xl border-2 border-dashed">Nessuna richiesta di guida in attesa.</div>`;
+            } else {
+                gridRichieste.innerHTML = aperte.map(r => `
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 hover:border-green-400 transition">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase italic">75 minuti</span>
+                            <span class="font-mono font-bold text-slate-400">${r.data}</span>
+                        </div>
+                        <h3 class="text-xl font-black text-slate-800 uppercase leading-tight">${r.allievo}</h3>
+                        <p class="text-2xl font-bold text-green-600 mb-6">${r.ora}</p>
+                        <button onclick="accettaGuida('${r.id}', '${r.allievo}')" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold hover:bg-green-600 transition">ACCETTA GUIDA</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function inviaRichiesta() {
+            const data = {
+                azione: "PUBBLICA_RICHIESTA",
+                allievo: document.getElementById('sel-allievi').value,
+                giorno: document.getElementById('all-data').value,
+                oraInizio: document.getElementById('all-inizio').value,
+                oraFine: document.getElementById('all-fine').value
+            };
+            if(!data.giorno || !data.oraInizio) return alert("Compila data e orari!");
+            await invia(data);
+        }
+
+        async function accettaGuida(id, allievo) {
+            const trainer = document.getElementById('sel-istruttori').value;
+            if(!trainer) return alert("Devi prima selezionare il tuo nome istruttore in alto!");
+
+            const data = {
+                azione: "ACCETTA_GUIDA",
+                requestId: id,
+                trainer: trainer,
+                allievo: allievo
+            };
+            await invia(data);
+        }
+
+        async function salvaAnagrafica() {
+            const data = {
+                azione: "ADD_ANAGRAFICA",
+                ruolo: document.getElementById('adm-ruolo').value,
+                nome: document.getElementById('adm-nome').value.toUpperCase(),
+                email: document.getElementById('adm-email').value,
+                cat: document.getElementById('adm-cat').value
+            };
+            if(!data.nome) return alert("Inserisci il nome!");
+            await invia(data);
+        }
+
+        async function invia(payload) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.text();
+                alert(result);
+                caricaDati();
+            } catch (e) {
+                alert("Errore nell'invio. Verifica la connessione o l'URL dell'API.");
+            }
+        }
+
+        // Caricamento iniziale (facoltativo se non hai ancora l'URL)
+        window.onload = caricaDati;
+
     </script>
 </body>
 </html>
