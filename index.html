@@ -71,13 +71,16 @@
             document.getElementById('loading').classList.add('hidden');
         }
 
+        // --- FUNZIONE FIX DATA ---
         function formattazioneEstesa(dataStr) {
             if(!dataStr) return "";
-            let d;
-            if(dataStr.includes('T')) d = new Date(dataStr.split('T')[0]);
-            else if(dataStr.includes('-')) d = new Date(dataStr);
-            else if(dataStr.includes('/')) { let p = dataStr.split('/'); d = new Date(p[2], p[1]-1, p[0]); }
-            return d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
+            let parti = dataStr.split(/[-T/]/);
+            let y, m, d;
+            if (parti[0].length === 4) { y = parti[0]; m = parti[1]; d = parti[2]; } 
+            else { d = parti[0]; m = parti[1]; y = parti[2]; }
+            // Forziamo mezzogiorno per evitare shift di fuso orario
+            const dataObj = new Date(y, m - 1, d, 12, 0, 0);
+            return dataObj.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
         }
 
         function updateView() {
@@ -90,10 +93,13 @@
                 mie.map(r => `
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
                     <div class="flex gap-3 items-center">
-                        ${r[4]==='ASSEGNATA' ? `<button onclick="scaricaICS('${pulisciData(r[1])}','${r[2]}','Guida CRI','Istruttore: ${r[5]}')" class="text-blue-500 bg-blue-50 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"><i class="fas fa-calendar-plus text-xl"></i></button>` : `<div class="text-slate-300 bg-slate-50 w-10 h-10 rounded-xl flex items-center justify-center"><i class="fas fa-clock text-xl"></i></div>`}
+                        ${r[4]==='ASSEGNATA' ? 
+                            `<button onclick="scaricaICS('${pulisciData(r[1])}','${r[2]}','Guida CRI','${r[5]}')" class="text-blue-500 bg-blue-50 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"><i class="fas fa-calendar-plus text-xl"></i></button>` : 
+                            `<div class="text-slate-300 bg-slate-50 w-10 h-10 rounded-xl flex items-center justify-center"><i class="fas fa-clock text-xl"></i></div>`
+                        }
                         <div>
                             <p class="text-[12px] font-black text-red-600 mb-0.5">${formattazioneEstesa(r[1])}</p>
-                            <p class="font-bold uppercase text-[11px] text-slate-800 tracking-tighter">ORE ${r[2]} - ${r[4]==='ASSEGNATA' ? 'ISTRUTTORE: ' + r[5] : 'IN ATTESA'}</p>
+                            <p class="font-bold uppercase text-[11px] text-slate-800 tracking-tighter">ORE ${r[2]} - ${r[4]==='ASSEGNATA' ? 'CON: ' + r[5] : 'IN ATTESA'}</p>
                         </div>
                     </div>
                     <div class="text-right">
@@ -111,33 +117,25 @@
         }
 
         function scaricaICS(dataStr, oraRange, titolo, desc) {
-            const [g, m, a] = dataStr.split('/');
+            let parti = dataStr.split('/');
             const oraInizio = oraRange.split(' - ')[0];
-            const oraFine = oraRange.split(' - ')[1];
             const [oreI, minI] = oraInizio.split(':');
-            const [oreF, minF] = oraFine.split(':');
-            const dStart = new Date(a, m - 1, g, oreI, minI);
-            const dEnd = new Date(a, m - 1, g, oreF, minF);
-            const formatICS = (d) => d.toISOString().replace(/-|:|\.\d+/g, '');
-            const icsMSG = ["BEGIN:VCALENDAR","VERSION:2.0","BEGIN:VEVENT","DTSTART:"+formatICS(dStart),"DTEND:"+formatICS(dEnd),"SUMMARY:"+titolo,"DESCRIPTION:"+desc,"LOCATION:CRI Gallarate","END:VEVENT","END:VCALENDAR"].join("\n");
-            const blob = new Blob([icsMSG], { type: 'text/calendar;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.setAttribute('download', 'guida.ics');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const dStart = new Date(parti[2], parti[1]-1, parti[0], oreI, minI);
+            const dEnd = new Date(dStart.getTime() + 75 * 60000);
+            const f = (d) => d.toISOString().replace(/-|:|\.\d+/g, '');
+            const ics = ["BEGIN:VCALENDAR","VERSION:2.0","BEGIN:VEVENT","DTSTART:"+f(dStart),"DTEND:"+f(dEnd),"SUMMARY:"+titolo,"DESCRIPTION:"+desc,"LOCATION:CRI Gallarate","END:VEVENT","END:VCALENDAR"].join("\n");
+            const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a'); link.href = window.URL.createObjectURL(blob);
+            link.setAttribute('download', 'guida.ics'); document.body.appendChild(link);
+            link.click(); document.body.removeChild(link);
         }
 
         async function inoltra() {
             const d = { azione: "INOLTRA", allievo: document.getElementById('all-nome').value, giorno: document.getElementById('all-data').value, oraInizio: document.getElementById('all-inizio').value, oraFine: document.getElementById('all-fine').value };
             if(!d.allievo || !d.giorno || !d.oraInizio) return alert("Mancano dati!");
             document.getElementById('loading').classList.remove('hidden');
-            try {
-                const res = await fetch(API, { method: 'POST', body: JSON.stringify(d) });
-                alert(await res.text());
-                load();
-            } catch(e) { alert("Errore invio"); }
+            const res = await fetch(API, { method: 'POST', body: JSON.stringify(d) });
+            alert(await res.text()); load();
             document.getElementById('loading').classList.add('hidden');
         }
 
