@@ -18,7 +18,7 @@
     <header class="bg-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center border-b-2 border-slate-100">
         <div class="flex items-center gap-3">
             <img src="logo.png" alt="CRI" onerror="this.style.display='none'; document.getElementById('fb-logo-t').classList.remove('hidden')" class="h-10 w-auto">
-            <div id="fb-logo-t" class="hidden w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white font-black text-xs shadow-inner">CRI</div>
+            <div id="fb-logo-t" class="hidden w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white font-black text-xs">CRI</div>
             <div class="leading-none">
                 <h1 class="text-lg font-black uppercase tracking-tighter text-slate-800">Area <span class="text-green-600">Trainer</span></h1>
                 <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">CRI Gallarate</p>
@@ -30,7 +30,7 @@
     <main class="p-4 max-w-xl mx-auto space-y-8">
         <div class="bg-white p-4 rounded-3xl shadow-md border border-slate-100">
             <label class="text-[10px] font-black uppercase text-slate-400 ml-2 mb-1 block tracking-widest">Seleziona il tuo nome</label>
-            <select id="ist-nome" onchange="updateView()" class="w-full p-3 bg-slate-50 rounded-xl font-black border-none outline-none shadow-inner"></select>
+            <select id="ist-nome" onchange="updateView()" class="w-full p-3 bg-slate-50 rounded-xl font-black border-none outline-none"></select>
         </div>
 
         <section class="space-y-4">
@@ -45,30 +45,32 @@
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbyVxBIiYfrFWxdYtqUeP7sSBS4bgSmhQOc3iXBG87n7O9ivXL4m6ALvQrKhHeK_WOw/exec";
+        const API = "https://script.google.com/macros/s/AKfycbxsKGOaV6dUNdGHH9u0TvVjdeWCTn1k5PymlXiymG4/exec";
         let db = { anagrafica: [], richieste: [] };
 
         async function load() {
             document.getElementById('loading').classList.remove('hidden');
-            const r = await fetch(API);
-            db = await r.json();
-            document.getElementById('ist-nome').innerHTML = '<option value="">-- Chi sei? --</option>' + 
-                db.anagrafica.filter(x => x[0] === 'TRAINER').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
-            
-            const aperte = db.richieste.filter(r => r[4] === 'APERTA');
-            document.getElementById('lista-proposte').innerHTML = aperte.length === 0 ? '<p class="text-center py-10 text-slate-300 font-bold uppercase text-[10px]">Nessuna proposta attiva</p>' : 
-                aperte.map(r => `
-                    <div class="bg-white p-5 rounded-[2rem] shadow-lg border-l-8 border-green-500 flex justify-between items-center transition hover:shadow-xl">
-                        <div>
-                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">${pulisciData(r[1])}</p>
-                            <h4 class="text-md font-black uppercase text-slate-800 tracking-tighter leading-none mb-1">${r[3]}</h4>
-                            <p class="text-xl font-black text-green-600 leading-none">${r[2]}</p>
+            try {
+                const r = await fetch(API);
+                db = await r.json();
+                document.getElementById('ist-nome').innerHTML = '<option value="">-- Chi sei? --</option>' + 
+                    db.anagrafica.filter(x => x[0] === 'TRAINER').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
+                
+                const aperte = db.richieste.filter(r => r[4] === 'APERTA');
+                document.getElementById('lista-proposte').innerHTML = aperte.length === 0 ? '<p class="text-center py-10 text-slate-300 font-bold uppercase text-[10px]">Nessuna proposta attiva</p>' : 
+                    aperte.map(r => `
+                        <div class="bg-white p-5 rounded-[2rem] shadow-lg border-l-8 border-green-500 flex justify-between items-center transition active:scale-95">
+                            <div>
+                                <p class="text-[9px] font-black text-slate-400 uppercase">${pulisciData(r[1])}</p>
+                                <h4 class="text-md font-black uppercase text-slate-800 tracking-tighter">${r[3]}</h4>
+                                <p class="text-xl font-black text-green-600 leading-none">${r[2]}</p>
+                            </div>
+                            <button onclick="accetta('${r[0]}','${r[3]}','${r[1]}','${r[2]}')" class="bg-slate-900 text-white px-5 py-3 rounded-2xl font-black text-[10px] uppercase italic shadow-md">Accetta</button>
                         </div>
-                        <button onclick="accetta('${r[0]}','${r[3]}','${r[1]}','${r[2]}')" class="bg-slate-900 text-white px-5 py-3 rounded-2xl font-black text-[10px] uppercase italic shadow-md active:scale-90 transition">Accetta</button>
-                    </div>
-                `).join('');
+                    `).join('');
+                updateView();
+            } catch(e) { console.error(e); }
             document.getElementById('loading').classList.add('hidden');
-            updateView();
         }
 
         function updateView() {
@@ -78,13 +80,13 @@
             document.getElementById('miei-impegni').innerHTML = miei.map(r => `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-slate-900 flex justify-between items-center text-[11px] font-bold">
                     <div class="flex gap-3 items-center">
-                         <button onclick="scaricaICS('${pulisciData(r[1])}','${r[2]}','Guida con ${r[3]}','Mezzo: ${r[6]||'Controlla portale'}')" class="text-slate-500 bg-slate-50 w-8 h-8 rounded-lg flex items-center justify-center shadow-sm hover:text-green-600"><i class="fas fa-calendar-plus text-lg"></i></button>
+                         <button onclick="scaricaICS('${pulisciData(r[1])}','${r[2]}','Guida con ${r[3]}','Mezzo: ${r[6]||'Controlla portale'}')" class="text-slate-500 bg-slate-50 w-8 h-8 rounded-lg flex items-center justify-center shadow-sm"><i class="fas fa-calendar-plus text-lg"></i></button>
                          <div>
-                            <p class="uppercase text-slate-400 text-[9px] leading-none">${pulisciData(r[1])} - ${r[2]}</p>
+                            <p class="uppercase text-slate-400">${pulisciData(r[1])} - ${r[2]}</p>
                             <p class="uppercase text-slate-800 font-black">${r[3]}</p>
                          </div>
                     </div>
-                    <p class="text-red-600 font-black tracking-tighter">${r[6] || '---'}</p>
+                    <p class="text-red-600 font-black">${r[6] || '---'}</p>
                 </div>
             `).reverse().join('');
         }
@@ -110,9 +112,12 @@
             if(!trainer) return alert("Seleziona prima il tuo nome!");
             if(!confirm(`Vuoi accettare la guida di ${allievo}?`)) return;
             document.getElementById('loading').classList.remove('hidden');
-            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ACCETTA", idRichiesta: id, allievo: allievo, istruttore: trainer, dataGuida: data, oraGuida: ora }) });
-            alert(await res.text());
-            location.reload();
+            try {
+                const res = await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ACCETTA", idRichiesta: id, allievo: allievo, istruttore: trainer, dataGuida: data, oraGuida: ora }) });
+                alert(await res.text());
+                load();
+            } catch(e) { alert("Errore accetazione"); }
+            document.getElementById('loading').classList.add('hidden');
         }
 
         function pulisciData(d) { if(typeof d === 'string' && d.includes('T')) { let p = d.split('T')[0].split('-'); return p[2]+'/'+p[1]+'/'+p[0]; } return d; }
