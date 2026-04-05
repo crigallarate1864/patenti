@@ -2,110 +2,276 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRI Gallarate - Trainer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CRI Gallarate - Trainer Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; }
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-        .accordion-content.open { max-height: 1000px; }
+        body { font-family: 'Outfit', sans-serif; background-color: #f1f5f9; color: #1e293b; }
+        .cri-red { background-color: #ed1c24; }
+        .cri-green { background-color: #10b981; }
+        .hidden { display: none; }
+        
+        /* Effetto Accordion */
+        .accordion-content { max-height: 0; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0; }
+        .accordion-content.open { max-height: 2000px; opacity: 1; padding-bottom: 1.5rem; }
+        .rotate-icon { transition: transform 0.3s ease; }
+        .rotate-icon.open { transform: rotate(180deg); }
+
+        /* Card Style */
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        .slot-pill { transition: all 0.2s ease; border: 2px solid transparent; }
+        .slot-pill:hover { border-color: #10b981; background: #ecfdf5; color: #065f46; }
+        .slot-pill:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="pb-10">
+<body class="pb-20">
 
-    <header class="bg-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center border-b-2 border-slate-100">
-        <div class="flex items-center gap-3"><img src="logo.png" alt="CRI" class="h-10"><h1 class="text-lg font-black uppercase text-slate-800">Area <span class="text-green-600">Trainer</span></h1></div>
-        <div id="loading" class="hidden animate-spin text-green-600"><i class="fas fa-spinner"></i></div>
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 px-4 py-3 shadow-sm">
+        <div class="max-w-xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 cri-red rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
+                    <img src="logo.png" alt="CRI" class="w-7 h-auto" onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='block'">
+                    <i id="fallback-icon" class="fas fa-ambulance text-white hidden"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight uppercase leading-none">Area <span class="text-green-600">Trainer</span></h1>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">CRI Gallarate</p>
+                </div>
+            </div>
+            <div id="loader" class="hidden"><i class="fas fa-circle-notch animate-spin text-green-600 text-xl"></i></div>
+        </div>
     </header>
 
-    <main class="p-4 max-w-xl mx-auto space-y-6">
-        <div id="error-box" class="hidden p-4 bg-red-600 text-white rounded-xl text-xs font-bold"></div>
+    <main class="p-4 max-w-xl mx-auto space-y-8 mt-4">
         
-        <select id="ist-nome" onchange="updateView()" class="w-full p-4 bg-white rounded-2xl shadow-md font-black border-none outline-none"></select>
-        
-        <div id="lista-proposte" class="space-y-4"></div>
+        <div class="bg-white p-5 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white">
+            <label class="text-[10px] font-black uppercase text-slate-400 ml-2 mb-2 block tracking-widest italic">Identità Istruttore</label>
+            <div class="relative">
+                <select id="ist-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl font-extrabold border-2 border-slate-50 appearance-none focus:border-green-500 focus:bg-white outline-none transition-all text-slate-700 shadow-inner">
+                    </select>
+                <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </div>
+            </div>
+        </div>
 
-        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center italic">I Miei Impegni</h3>
-        <div id="miei-impegni" class="space-y-3"></div>
+        <section class="space-y-4">
+            <div class="flex items-center justify-between px-2">
+                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest italic">Disponibilità Allievi</h3>
+                <span id="count-proposte" class="bg-green-100 text-green-700 text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
+            </div>
+            
+            <div id="lista-proposte" class="space-y-4">
+                </div>
+        </section>
+
+        <section class="space-y-4 pt-4">
+            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest italic text-center">I Miei Prossimi Impegni</h3>
+            <div id="miei-impegni" class="space-y-3">
+                </div>
+        </section>
+
     </main>
 
     <script>
         const API = "https://script.google.com/macros/s/AKfycbxwlkLd-AIKFVbmjnqxsVsqSPXlWGxNjeBhQVr0gzITIHM0uT_4gHEUSVh5e54MkTR4/exec";
         let db = { anagrafica: [], richieste: [] };
 
-        async function load() {
-            document.getElementById('loading').classList.remove('hidden');
+        async function init() {
+            const loader = document.getElementById('loader');
+            loader.classList.remove('hidden');
             try {
-                const r = await fetch(API);
-                db = await r.json();
-                if(!db.anagrafica) throw new Error("Dati corrotti");
+                const response = await fetch(API);
+                db = await response.json();
                 
-                document.getElementById('ist-nome').innerHTML = '<option value="">-- Chi sei? --</option>' + 
-                    db.anagrafica.filter(x => x[0] && x[0].toUpperCase() === 'TRAINER').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
+                // Popola Select Trainer
+                const select = document.getElementById('ist-nome');
+                const trainers = db.anagrafica.filter(x => x[0] === 'TRAINER');
+                select.innerHTML = '<option value="">-- Seleziona il tuo Nome --</option>' + 
+                    trainers.map(t => `<option value="${t[1]}">${t[1]}</option>`).join('');
                 
                 renderProposte();
                 updateView();
-            } catch(e) {
-                document.getElementById('error-box').innerText = "ERRORE: " + e.message;
-                document.getElementById('error-box').classList.remove('hidden');
-            } finally {
-                document.getElementById('loading').classList.add('hidden');
+            } catch (e) {
+                console.error("Errore caricamento:", e);
+                alert("Errore di connessione con il database.");
             }
+            loader.classList.add('hidden');
         }
 
-        function fixData(s) {
+        // --- GESTIONE DATE BLINDATA ---
+        function formatDataEstesa(s) {
             if(!s || s === "Data") return "";
             let p = s.split('T')[0].split(/[-/]/); 
             let y, m, d;
             if (p[0].length === 4) { y = p[0]; m = p[1]; d = p[2]; } else { d = p[0]; m = p[1]; y = p[2]; }
-            const dateObj = new Date(y, m - 1, d, 12, 0);
-            return dateObj.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
+            const dateObj = new Date(y, m - 1, d, 12, 0); // Mezzogiorno fisso
+            return dateObj.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
         }
 
         function renderProposte() {
             const container = document.getElementById('lista-proposte');
-            if(!db.richieste) return;
+            const counter = document.getElementById('count-proposte');
             const aperte = db.richieste.filter(r => r[4] === 'APERTA');
-            const grouped = aperte.reduce((acc, r) => { (acc[r[3]] = acc[r[3]] || []).push(r); return acc; }, {});
+            counter.innerText = aperte.length;
 
-            let h = ""; Object.keys(grouped).forEach((allievo, i) => {
-                h += `<div class="bg-white rounded-[2rem] shadow-lg border border-slate-100 overflow-hidden">
-                    <div onclick="document.getElementById('acc-${i}').classList.toggle('open')" class="p-5 flex justify-between items-center cursor-pointer hover:bg-slate-50">
-                        <div class="flex items-center gap-3"><div class="w-8 h-8 bg-green-50 text-green-600 rounded-full flex items-center justify-center font-black text-xs">${grouped[allievo].length}</div><h4 class="font-black uppercase text-slate-800">${allievo}</h4></div>
-                        <i class="fas fa-chevron-down text-slate-300"></i>
-                    </div>
-                    <div id="acc-${i}" class="accordion-content bg-slate-50/30 p-5 space-y-4">`;
-                grouped[allievo].forEach(r => {
-                    h += `<div class="flex justify-between items-center border-b pb-2 border-slate-200">
-                        <p class="text-[10px] font-bold uppercase text-red-600">${fixData(r[1])}<br><span class="text-slate-800">ORE ${r[2]}</span></p>
-                        <button onclick="accetta('${r[0]}','${allievo}','${r[1]}','${r[2]}')" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase">Accetta</button>
+            if (aperte.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">
+                        <i class="fas fa-calendar-check text-slate-200 text-4xl mb-3"></i>
+                        <p class="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Nessuna proposta attiva</p>
                     </div>`;
-                });
-                h += `</div></div>`;
-            });
-            container.innerHTML = h || '<p class="text-center py-10 text-slate-300 font-black uppercase text-xs">Nessuna proposta</p>';
+                return;
+            }
+
+            // Raggruppa per Allievo
+            const grouped = aperte.reduce((acc, r) => {
+                const allievo = r[3];
+                if (!acc[allievo]) acc[allievo] = {};
+                if (!acc[allievo][r[1]]) acc[allievo][r[1]] = [];
+                acc[allievo][r[1]].push(r);
+                return acc;
+            }, {});
+
+            let html = "";
+            let idx = 0;
+            for (const allievo in grouped) {
+                idx++;
+                const slotsTotal = Object.values(grouped[allievo]).flat().length;
+                
+                html += `
+                <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/60 border border-white overflow-hidden transition-all">
+                    <div onclick="toggleAccordion('acc-${idx}')" class="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center shadow-inner">
+                                <i class="fas fa-user-graduate text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-black uppercase text-slate-800 tracking-tighter leading-tight">${allievo}</h4>
+                                <span class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-lg uppercase tracking-widest">${slotsTotal} Proposte</span>
+                            </div>
+                        </div>
+                        <i id="icon-acc-${idx}" class="fas fa-chevron-down text-slate-300 text-sm rotate-icon"></i>
+                    </div>
+                    
+                    <div id="acc-${idx}" class="accordion-content px-6">
+                        <div class="space-y-6 pt-2 border-t border-slate-50">`;
+
+                for (const data in grouped[allievo]) {
+                    html += `
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="w-1.5 h-4 bg-red-500 rounded-full"></span>
+                                <p class="text-[11px] font-black text-red-600 uppercase tracking-tighter">${formatDataEstesa(data)}</p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                ${grouped[allievo][data].map(slot => `
+                                    <button onclick="accetta('${slot[0]}','${allievo}','${slot[1]}','${slot[2]}')" 
+                                            class="slot-pill bg-white border-2 border-slate-100 text-slate-700 py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 shadow-sm">
+                                        <i class="far fa-clock text-slate-300"></i> ${slot[2]}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>`;
+                }
+
+                html += `</div></div></div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            const isOpen = content.classList.contains('open');
+            
+            // Chiudi altri? (Opzionale, qui lasciamo libero)
+            content.classList.toggle('open');
+            icon.classList.toggle('open');
         }
 
         function updateView() {
-            const n = document.getElementById('ist-nome').value; if(!n || !db.richieste) return;
-            const miei = db.richieste.filter(r => r[5] === n && r[4] === 'ASSEGNATA');
-            document.getElementById('miei-impegni').innerHTML = miei.map(r => `
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-slate-900 flex justify-between items-center">
-                    <p class="text-[10px] font-bold uppercase">${fixData(r[1])} - ${r[2]}<br>${r[3]}</p>
-                    <p class="text-red-600 font-black text-xs">${r[6] || '---'}</p>
-                </div>`).reverse().join('');
+            const nomeIstruttore = document.getElementById('ist-nome').value;
+            const container = document.getElementById('miei-impegni');
+            if(!nomeIstruttore) {
+                container.innerHTML = '<p class="text-center text-slate-300 font-bold uppercase text-[9px] py-4">Seleziona il tuo nome per vedere gli impegni</p>';
+                return;
+            }
+
+            const mieiImpegni = db.richieste.filter(r => r[5] === nomeIstruttore && r[4] === 'ASSEGNATA');
+            
+            if(mieiImpegni.length === 0) {
+                container.innerHTML = '<p class="text-center text-slate-300 font-bold uppercase text-[9px] py-4">Nessun impegno in programma</p>';
+                return;
+            }
+
+            container.innerHTML = mieiImpegni.map(r => `
+                <div class="bg-white p-5 rounded-[2rem] shadow-md border border-white flex justify-between items-center group">
+                    <div class="flex items-center gap-4">
+                         <button onclick="scaricaICS('${r[1]}','${r[2]}','Guida con ${r[3]}','')" 
+                                 class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg shadow-slate-300 hover:bg-green-600 transition-colors">
+                             <i class="fas fa-calendar-plus text-sm"></i>
+                         </button>
+                         <div class="text-left">
+                            <p class="uppercase text-red-600 text-[10px] font-black leading-none mb-1">${formatDataEstesa(r[1])}</p>
+                            <p class="uppercase text-slate-800 font-black text-xs tracking-tighter">ORE ${r[2]} — ${r[3]}</p>
+                         </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[9px] font-black text-slate-400 uppercase block leading-none mb-1 italic">Mezzo</span>
+                        <p class="text-red-600 font-black text-xs tracking-tighter uppercase">${r[6] || '---'}</p>
+                    </div>
+                </div>
+            `).reverse().join('');
         }
 
-        async function accetta(id, a, d, o) {
-            const ist = document.getElementById('ist-nome').value; if(!ist) return alert("Scegli il tuo nome!");
-            if(!confirm("Accetti questa guida?")) return;
-            document.getElementById('loading').classList.remove('hidden');
-            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ACCETTA", idRichiesta: id, allievo: a, istruttore: ist, dataGuida: d, oraGuida: o }) });
-            location.reload();
+        async function accetta(id, allievo, data, ora) {
+            const ist = document.getElementById('ist-nome').value;
+            if(!ist) return alert("⚠️ Seleziona prima il tuo nome nel selettore in alto!");
+            
+            if(!confirm(`Confermi di accettare la guida con ${allievo}?\nData: ${data}\nOra: ${ora}`)) return;
+            
+            document.getElementById('loader').classList.remove('hidden');
+            try {
+                const response = await fetch(API, {
+                    method: 'POST',
+                    body: JSON.stringify({ azione: "ACCETTA", idRichiesta: id, allievo: allievo, istruttore: ist, dataGuida: data, oraGuida: ora })
+                });
+                const result = await response.text();
+                alert(result);
+                location.reload();
+            } catch (e) {
+                alert("Errore durante l'operazione.");
+            }
+            document.getElementById('loader').classList.add('hidden');
         }
-        window.onload = load;
+
+        // Funzione per scaricare file calendario
+        function scaricaICS(dataStr, oraRange, titolo, desc) {
+            let p = dataStr.split('T')[0].split(/[-/]/); 
+            let y, m, d;
+            if (p[0].length === 4) { y = p[0]; m = p[1]; d = p[2]; } else { d = p[0]; m = p[1]; y = p[2]; }
+            
+            const oraInizio = oraRange.split(' - ')[0];
+            const [oreI, minI] = oraInizio.split(':');
+            const dStart = new Date(y, m-1, d, oreI, minI);
+            const dEnd = new Date(dStart.getTime() + 75 * 60000);
+            
+            const f = (date) => date.toISOString().replace(/-|:|\.\d+/g, '');
+            const ics = ["BEGIN:VCALENDAR","VERSION:2.0","BEGIN:VEVENT","DTSTART:"+f(dStart),"DTEND:"+f(dEnd),"SUMMARY:"+titolo,"DESCRIPTION:"+desc,"LOCATION:CRI Gallarate","END:VEVENT","END:VCALENDAR"].join("\n");
+            
+            const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.setAttribute('download', 'guida_cri.ics');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
