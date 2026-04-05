@@ -10,40 +10,78 @@
     <style>
         body { font-family: 'Outfit', sans-serif; background-color: #f1f5f9; }
         .cri-red { background-color: #ed1c24; }
+        .tab-active { border-bottom: 4px solid #ed1c24; color: #ed1c24; }
     </style>
 </head>
-<body class="p-4">
+<body class="p-2 md:p-6">
 
-    <header class="max-w-5xl mx-auto mb-8 flex justify-between items-center bg-white p-5 rounded-3xl shadow-lg border-b-4 border-red-600">
+    <header class="max-w-5xl mx-auto mb-6 flex justify-between items-center bg-white p-5 rounded-3xl shadow-lg border-b-2 border-slate-100">
         <div class="flex items-center gap-3">
             <img src="logo.png" alt="CRI" onerror="this.style.display='none'; document.getElementById('fb-logo-a').classList.remove('hidden')" class="h-10 w-auto">
             <div id="fb-logo-a" class="hidden w-10 h-10 cri-red rounded-lg flex items-center justify-center text-white font-black text-xs">CRI</div>
             <div class="leading-none">
-                <h1 class="text-xl font-black uppercase text-slate-800">Supervisione <span class="text-red-600">Patenti</span></h1>
+                <h1 class="text-xl font-black uppercase text-slate-800">Admin <span class="text-red-600">Patenti</span></h1>
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic leading-none mt-1">CRI Gallarate</p>
             </div>
         </div>
-        <button onclick="location.reload()" class="bg-slate-100 p-3 rounded-full text-slate-500 hover:text-red-600 transition shadow-sm"><i class="fas fa-sync-alt"></i></button>
+        <button onclick="load()" class="bg-slate-100 p-3 rounded-full text-slate-500 hover:text-red-600 transition shadow-sm"><i class="fas fa-sync-alt text-lg"></i></button>
     </header>
 
-    <main class="max-w-5xl mx-auto bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs font-bold">
-                <thead class="bg-slate-900 text-slate-400 uppercase tracking-widest">
-                    <tr>
-                        <th class="p-4">Data/Ora</th>
-                        <th class="p-4">Discente</th>
-                        <th class="p-4">Trainer</th>
-                        <th class="p-4">Mezzo Assegnato</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-table" class="divide-y divide-slate-100"></tbody>
-            </table>
-        </div>
+    <div class="max-w-5xl mx-auto mb-6 flex bg-white rounded-2xl shadow-md overflow-hidden font-bold uppercase text-xs">
+        <button onclick="tab('guide')" id="t-guide" class="flex-1 p-4 tab-active">Supervisione Guide</button>
+        <button onclick="tab('anagrafica')" id="t-anagrafica" class="flex-1 p-4">Gestione Personale</button>
+    </div>
+
+    <main class="max-w-5xl mx-auto space-y-6">
+        
+        <section id="sec-guide" class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-[11px] font-bold">
+                    <thead class="bg-slate-900 text-slate-400 uppercase tracking-widest">
+                        <tr>
+                            <th class="p-4">Data/Ora</th>
+                            <th class="p-4">Discente</th>
+                            <th class="p-4">Trainer</th>
+                            <th class="p-4">Mezzo</th>
+                            <th class="p-4">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="sec-anagrafica" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-50">
+                <h3 class="font-black uppercase mb-4 text-slate-800 tracking-tighter">Aggiungi Nuovo Membro</h3>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <select id="new-ruolo" class="p-3 bg-slate-50 rounded-xl border border-slate-100 font-bold outline-none focus:border-red-500 shadow-inner">
+                        <option value="TRAINER">TRAINER</option>
+                        <option value="DISCENTE">DISCENTE</option>
+                    </select>
+                    <input id="new-nome" type="text" placeholder="COGNOME NOME" class="p-3 bg-slate-50 rounded-xl border border-slate-100 uppercase font-bold md:col-span-2 outline-none focus:border-red-500 shadow-inner">
+                    <select id="new-cat" class="p-3 bg-slate-50 rounded-xl border border-slate-100 font-bold outline-none shadow-inner">
+                        <option value="">CAT (Solo Discenti)</option>
+                        <option value="4">PAT 4</option>
+                        <option value="5">PAT 5</option>
+                    </select>
+                    <button onclick="addPersona()" class="cri-red text-white p-3 rounded-xl font-black shadow-lg shadow-red-100 uppercase tracking-widest active:scale-95 transition">Aggiungi</button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+                <table class="w-full text-left text-xs font-bold">
+                    <thead class="bg-slate-50 uppercase text-slate-400 border-b">
+                        <tr><th class="p-4">Ruolo</th><th class="p-4">Nome</th><th class="p-4">Dettagli</th><th class="p-4 text-center">Azioni</th></tr>
+                    </thead>
+                    <tbody id="anag-table" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                </table>
+            </div>
+        </section>
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbyStmx0Dsh9Vu0b0TOgfkfVM90KZsoiltA7h63gswDLK0rYCJMyDviVvcK2IAWWNIqB/exec";
+        const API = "https://script.google.com/macros/s/AKfycbyXk3jpMEpdDY5iKuA84mP4lRByggUT1t5NuZHsoJ891DbV7uuvlzEHL7rT2jUorLT5/exec";
 
         async function load() {
             const r = await fetch(API);
@@ -51,22 +89,60 @@
             
             document.getElementById('admin-table').innerHTML = db.richieste.map(r => `
                 <tr class="hover:bg-slate-50 transition border-b">
-                    <td class="p-4 text-slate-800">${pulisciData(r[1])}<br><span class="text-red-600 font-black">${r[2]}</span></td>
+                    <td class="p-4">${pulisciData(r[1])}<br><span class="text-red-600 font-black">${r[2]}</span></td>
                     <td class="p-4 uppercase text-slate-900 font-black">${r[3]}</td>
                     <td class="p-4 uppercase ${r[5] ? 'text-green-600 font-black' : 'text-slate-300'}">${r[5] || 'In attesa'}</td>
                     <td class="p-4">
                         <input id="m-${r[0]}" value="${r[6] || ''}" onchange="setMezzo('${r[0]}')" 
-                               placeholder="Inserisci Targa..." 
-                               class="w-full border-2 border-slate-100 p-2 rounded-xl uppercase font-black outline-none focus:border-red-500 transition shadow-inner bg-slate-50">
+                               placeholder="..." 
+                               class="w-full border-b-2 border-slate-100 p-1 uppercase font-black outline-none focus:border-red-500 transition bg-transparent text-[10px]">
                     </td>
+                    <td class="p-4 text-center"><button onclick="delGuida('${r[0]}')" class="text-red-300 hover:text-red-600 transition"><i class="fas fa-trash-alt text-lg"></i></button></td>
                 </tr>
             `).reverse().join('');
+
+            document.getElementById('anag-table').innerHTML = db.anagrafica.map(a => `
+                <tr class="hover:bg-slate-50 border-b">
+                    <td class="p-4 font-black ${a[0]==='TRAINER'?'text-green-600':'text-blue-600'}">${a[0]}</td>
+                    <td class="p-4 uppercase text-slate-900 font-black">${a[1]}</td>
+                    <td class="p-4 text-slate-400 font-medium">${a[3] ? 'CATEGORIA PAT ' + a[3] : a[2]}</td>
+                    <td class="p-4 text-center"><button onclick="delPersona('${a[1]}')" class="text-red-500 bg-red-50 w-9 h-9 rounded-xl shadow-sm hover:shadow-md transition active:scale-90"><i class="fas fa-user-minus"></i></button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function addPersona() {
+            const d = { azione: "ADD_PERSONA", ruolo: document.getElementById('new-ruolo').value, nome: document.getElementById('new-nome').value.toUpperCase(), cat: document.getElementById('new-cat').value };
+            if(!d.nome) return alert("Inserisci il nome!");
+            const res = await fetch(API, { method: 'POST', body: JSON.stringify(d) });
+            alert(await res.text());
+            load();
+        }
+
+        async function delPersona(nome) {
+            if(!confirm(`Eliminare ${nome} definitivamente dall'anagrafica?`)) return;
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: nome }) });
+            load();
+        }
+
+        async function delGuida(id) {
+            if(!confirm(`Eliminare questa guida/proposta?`)) return;
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) });
+            load();
         }
 
         async function setMezzo(id) {
             const val = document.getElementById('m-'+id).value;
-            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val.toUpperCase() }) });
-            console.log("Stato salvataggio mezzo: " + await res.text());
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val.toUpperCase() }) });
+        }
+
+        function tab(t) {
+            document.getElementById('sec-guide').classList.add('hidden');
+            document.getElementById('sec-anagrafica').classList.add('hidden');
+            document.getElementById('t-guide').classList.remove('tab-active');
+            document.getElementById('t-anagrafica').classList.remove('tab-active');
+            document.getElementById('sec-' + t).classList.remove('hidden');
+            document.getElementById('t-' + t).classList.add('tab-active');
         }
 
         function pulisciData(d) { if(typeof d === 'string' && d.includes('T')) { let p = d.split('T')[0].split('-'); return p[2]+'/'+p[1]+'/'+p[0]; } return d; }
