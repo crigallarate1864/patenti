@@ -33,7 +33,6 @@
     </div>
 
     <main class="max-w-5xl mx-auto space-y-6">
-        
         <section id="sec-guide" class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-[11px] font-bold">
@@ -77,65 +76,63 @@
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbw34wKdqEayDmCctsmq1yMmiTPJrdD012i0z3JU-iwOJP_RyfN1RQn7ZHsrdwITFEDO/exec";
+        const API = "https://script.google.com/macros/s/AKfycbwa1nuYn5xFcWpuO-oz4SVYPKmJO9iDQRqK2LrhEHPGtmqcVbHnwnbVL2eCdkCywNKo/exec";
 
         async function load() {
-            try {
-                const r = await fetch(API);
-                const db = await r.json();
-                
-                document.getElementById('admin-table').innerHTML = db.richieste.map(r => `
-                    <tr class="hover:bg-slate-50 transition border-b">
-                        <td class="p-4">${pulisciData(r[1])}<br><span class="text-red-600 font-black">${r[2]}</span></td>
-                        <td class="p-4 uppercase text-slate-900 font-black">${r[3]}</td>
-                        <td class="p-4 uppercase ${r[5] ? 'text-green-600 font-black' : 'text-slate-300'}">${r[5] || 'In attesa'}</td>
-                        <td class="p-4"><input id="m-${r[0]}" value="${r[6] || ''}" onchange="setMezzo('${r[0]}')" placeholder="..." class="w-full border-b-2 border-slate-100 p-1 uppercase font-black outline-none bg-transparent"></td>
-                        <td class="p-4 text-center"><button onclick="delGuida('${r[0]}')" class="text-red-300 hover:text-red-600"><i class="fas fa-trash-alt text-lg"></i></button></td>
-                    </tr>
-                `).reverse().join('');
+            const r = await fetch(API);
+            const db = await r.json();
+            
+            document.getElementById('admin-table').innerHTML = db.richieste.map(r => `
+                <tr class="hover:bg-slate-50 border-b">
+                    <td class="p-4"><span class="text-red-600 font-black">${formattazioneEstesa(r[1])}</span><br>ORE ${r[2]}</td>
+                    <td class="p-4 uppercase text-slate-900 font-black">${r[3]}</td>
+                    <td class="p-4 uppercase ${r[5] ? 'text-green-600 font-black' : 'text-slate-300'}">${r[5] || 'In attesa'}</td>
+                    <td class="p-4"><input id="m-${r[0]}" value="${r[6] || ''}" onchange="setMezzo('${r[0]}')" placeholder="..." class="w-full border-b-2 border-slate-100 p-1 uppercase font-black outline-none bg-transparent"></td>
+                    <td class="p-4 text-center"><button onclick="delGuida('${r[0]}')" class="text-red-300 hover:text-red-600 transition"><i class="fas fa-trash-alt text-lg"></i></button></td>
+                </tr>
+            `).reverse().join('');
 
-                document.getElementById('anag-table').innerHTML = db.anagrafica.map(a => `
-                    <tr class="hover:bg-slate-50 border-b">
-                        <td class="p-4 font-black ${a[0]==='TRAINER'?'text-green-600':(a[0]==='RESPONSABILE'?'text-red-600':'text-blue-600')}">${a[0]}</td>
-                        <td class="p-4 uppercase text-slate-900 font-black">${a[1]}</td>
-                        <td class="p-4 text-slate-500 font-medium">${a[2]} ${a[3] ? ' - CAT ' + a[3] : ''}</td>
-                        <td class="p-4 text-center"><button onclick="delPersona('${a[1]}')" class="text-red-500 bg-red-50 w-9 h-9 rounded-xl shadow-sm active:scale-90 transition"><i class="fas fa-user-minus"></i></button></td>
-                    </tr>
-                `).join('');
-            } catch(e) { console.error(e); }
+            document.getElementById('anag-table').innerHTML = db.anagrafica.map(a => `
+                <tr class="hover:bg-slate-50 border-b">
+                    <td class="p-4 font-black ${a[0]==='TRAINER'?'text-green-600':(a[0]==='RESPONSABILE'?'text-red-600':'text-blue-600')}">${a[0]}</td>
+                    <td class="p-4 uppercase text-slate-900 font-black">${a[1]}</td>
+                    <td class="p-4 text-slate-500 font-medium">${a[2]} ${a[3] ? ' - CAT ' + a[3] : ''}</td>
+                    <td class="p-4 text-center"><button onclick="delPersona('${a[1]}')" class="text-red-500 bg-red-50 w-9 h-9 rounded-xl shadow-sm active:scale-90 transition"><i class="fas fa-user-minus"></i></button></td>
+                </tr>
+            `).join('');
+        }
+
+        function formattazioneEstesa(dataStr) {
+            if(!dataStr) return "";
+            let dataObj;
+            if(dataStr.includes('T')) dataObj = new Date(dataStr.split('T')[0]);
+            else if(dataStr.includes('-')) dataObj = new Date(dataStr);
+            else if(dataStr.includes('/')) { let p = dataStr.split('/'); dataObj = new Date(p[2], p[1]-1, p[0]); }
+            return dataObj.toLocaleDateString('it-IT', { day: 'numeric', month: 'numeric', year: 'numeric' });
         }
 
         async function addPersona() {
             const d = { azione: "ADD_PERSONA", ruolo: document.getElementById('new-ruolo').value, nome: document.getElementById('new-nome').value.toUpperCase(), email: document.getElementById('new-email').value, cat: document.getElementById('new-cat').value };
             if(!d.nome || !d.email) return alert("Inserisci Nome ed Email!");
-            try {
-                const res = await fetch(API, { method: 'POST', body: JSON.stringify(d) });
-                alert(await res.text());
-                load();
-            } catch(e) { alert("Errore"); }
+            await fetch(API, { method: 'POST', body: JSON.stringify(d) });
+            load();
         }
 
         async function delPersona(nome) {
             if(!confirm(`Eliminare ${nome}?`)) return;
-            try {
-                await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: nome }) });
-                load();
-            } catch(e) { alert("Errore"); }
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: nome }) });
+            load();
         }
 
         async function delGuida(id) {
             if(!confirm(`Annullare questa guida?`)) return;
-            try {
-                await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) });
-                load();
-            } catch(e) { alert("Errore"); }
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) });
+            load();
         }
 
         async function setMezzo(id) {
             const val = document.getElementById('m-'+id).value;
-            try {
-                await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val.toUpperCase() }) });
-            } catch(e) { alert("Errore"); }
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val.toUpperCase() }) });
         }
 
         function tab(t) {
