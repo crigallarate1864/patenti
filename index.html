@@ -75,9 +75,12 @@
             const mie = db.richieste.filter(r => r[3] === nome && (r[4]==='ASSEGNATA' || r[4]==='APERTA'));
             document.getElementById('mie-guide').innerHTML = mie.map(r => `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
-                    <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase">${pulisciData(r[1])} - ${r[2]}</p>
-                        <p class="font-black uppercase text-xs text-slate-800">${r[5] || 'In attesa...'}</p>
+                    <div class="flex gap-3 items-center">
+                        ${r[4]==='ASSEGNATA' ? `<button onclick="scaricaICS('${pulisciData(r[1])}','${r[2]}','Guida CRI: ${r[5]}','Mezzo: ${r[6]||'Da assegnare'}')" class="text-blue-500 bg-blue-50 w-8 h-8 rounded-lg flex items-center justify-center"><i class="fas fa-calendar-plus"></i></button>` : ''}
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase">${pulisciData(r[1])} - ${r[2]}</p>
+                            <p class="font-black uppercase text-xs text-slate-800">${r[5] || 'In attesa...'}</p>
+                        </div>
                     </div>
                     <div class="text-right">
                         <span class="px-2 py-1 rounded-full text-[8px] font-black uppercase ${r[4]==='ASSEGNATA'?'bg-green-100 text-green-700':'bg-blue-100 text-blue-700'}">${r[4]==='ASSEGNATA'?'Confermata':'Inoltrata'}</span>
@@ -91,6 +94,36 @@
             const box = document.getElementById('stat-box');
             box.classList.remove('hidden');
             box.innerText = `Stato Percorso: ${f} guide su ${p[3]==='5'?'6':'4'}`;
+        }
+
+        function scaricaICS(dataStr, oraStr, titolo, desc) {
+            const [g, m, a] = dataStr.split('/');
+            const [ore, min] = oraStr.split(':');
+            const inizio = new Date(a, m - 1, g, ore, min);
+            const fine = new Date(inizio.getTime() + 75 * 60000); // Durata 75 min
+
+            const formatICS = (d) => d.toISOString().replace(/-|:|\.\d+/g, '');
+
+            const icsMSG = [
+                "BEGIN:VCALENDAR",
+                "VERSION:2.0",
+                "BEGIN:VEVENT",
+                "DTSTART:" + formatICS(inizio),
+                "DTEND:" + formatICS(fine),
+                "SUMMARY:" + titolo,
+                "DESCRIPTION:" + desc,
+                "LOCATION:CRI Gallarate",
+                "END:VEVENT",
+                "END:VCALENDAR"
+            ].join("\n");
+
+            const blob = new Blob([icsMSG], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.setAttribute('download', 'guida_cri.ics');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         async function inoltra() {
