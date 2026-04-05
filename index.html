@@ -44,7 +44,6 @@
                     <div><label>Dalle ore</label><input type="time" id="all-inizio" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-slate-50 font-bold text-center"></div>
                     <div><label>Alle ore</label><input type="time" id="all-fine" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-slate-50 font-bold text-center"></div>
                 </div>
-                <div id="stat-box" class="hidden p-4 bg-blue-50 rounded-2xl text-blue-700 text-center font-black uppercase text-[10px] tracking-widest italic border border-blue-100"></div>
                 <button onclick="inoltra()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase shadow-lg shadow-blue-100 active:scale-95 transition">Inoltra Proposta</button>
             </div>
         </section>
@@ -56,7 +55,7 @@
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbxK8AzSN2fYn5s1kf8zv3u2ZwyYImvI583_BtG3srcDe5DnEUJWIffv65HEUOxPEyM/exec";
+        const API = "https://script.google.com/macros/s/AKfycbzisixq5H1LEQnvl77PV5QIBbmPSDRNEWLS4ZM2AiD7j6L5wRnZXSeac9oyAcTARjbD/exec";
         let db = { anagrafica: [], richieste: [] };
 
         async function load() {
@@ -71,17 +70,11 @@
             document.getElementById('loading').classList.add('hidden');
         }
 
-        // --- FIX DATA DEFINITIVO ---
         function formattazioneEstesa(dataStr) {
             if(!dataStr) return "";
             let d, m, y;
-            if(dataStr.includes('-')) {
-                let p = dataStr.split('-');
-                y = p[0]; m = p[1]; d = p[2];
-            } else {
-                let p = dataStr.split('/');
-                d = p[0]; m = p[1]; y = p[2];
-            }
+            if(dataStr.includes('-')) { let p = dataStr.split('-'); y = p[0]; m = p[1]; d = p[2]; }
+            else { let p = dataStr.split('/'); d = p[0]; m = p[1]; y = p[2]; }
             const mesi = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
             const dataPura = new Date(y, m-1, d, 12, 0, 0);
             const giorni = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
@@ -113,14 +106,6 @@
                     </div>
                 </div>
             `).reverse().join('');
-            
-            const p = db.anagrafica.find(x => x[1] === nome);
-            if(p){
-                const f = db.richieste.filter(r => r[3] === nome && r[4] === 'ASSEGNATA').length;
-                const box = document.getElementById('stat-box');
-                box.classList.remove('hidden');
-                box.innerText = `Percorso: ${f} guide su ${p[3]==='5'?'6':'4'}`;
-            }
         }
 
         function scaricaICS(dataStr, oraRange, titolo, desc) {
@@ -142,8 +127,7 @@
             if(!d.allievo || !d.giorno || !d.oraInizio) return alert("Mancano dati!");
             document.getElementById('loading').classList.remove('hidden');
             const res = await fetch(API, { method: 'POST', body: JSON.stringify(d) });
-            alert(await res.text()); 
-            load();
+            alert(await res.text()); load();
             document.getElementById('loading').classList.add('hidden');
         }
 
