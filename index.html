@@ -29,8 +29,10 @@
         <section class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100">
             <h2 class="text-xl font-black mb-6 uppercase italic text-center text-slate-800">Inoltra Disponibilità</h2>
             <div class="space-y-4">
-                <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Chi sei?</label><select id="all-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none"></select></div>
-                <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Giorno</label><input type="date" id="all-data" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none"></div>
+                <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Chi sei?</label>
+                <select id="all-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none"></select></div>
+                <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Giorno</label>
+                <input type="date" id="all-data" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none"></div>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Dalle</label><input type="time" id="all-inizio" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center"></div>
                     <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Alle</label><input type="time" id="all-fine" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center"></div>
@@ -44,41 +46,53 @@
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbz1d4pHO2lvq-Us-zxTn9XGmknOnEfrhQubyPsXhyKzDOfp7juaN9i0atiKPCaWvDcz/exec";
+        const API = "https://script.google.com/macros/s/AKfycbzisixq5H1LEQnvl77PV5QIBbmPSDRNEWLS4ZM2AiD7j6L5wRnZXSeac9oyAcTARjbD/exec";
         let db = { anagrafica: [], richieste: [] };
 
         async function load() {
+            const errBox = document.getElementById('error-box');
             document.getElementById('loading').classList.remove('hidden');
             try {
                 const r = await fetch(API);
+                if (!r.ok) throw new Error("Risposta del server non valida. Controlla il deployment.");
                 db = await r.json();
-                if(db.error) throw new Error(db.error);
+                
                 document.getElementById('all-nome').innerHTML = '<option value="">-- Seleziona Nome --</option>' + 
-                    db.anagrafica.filter(x => x[0] === 'DISCENTE').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
+                    db.anagrafica.filter(x => x[0].toUpperCase() === 'DISCENTE').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
+                
+                errBox.classList.add('hidden');
                 updateView();
             } catch(e) {
-                document.getElementById('error-box').innerText = "ERRORE: " + e.message;
-                document.getElementById('error-box').classList.remove('hidden');
+                errBox.innerText = "ERRORE DI CARICAMENTO: " + e.message + ". Assicurati che l'URL sia corretto e il deployment sia impostato su 'Chiunque'.";
+                errBox.classList.remove('hidden');
             }
             document.getElementById('loading').classList.add('hidden');
         }
 
-        function fixData(s) {
+        // FUNZIONE ANTI-BUG DATA: Legge la stringa pura
+        function formatData(s) {
             if(!s) return "";
-            let p = s.split(/[-T/]/); let y, m, d;
+            // Rimuove eventuali orari se presenti (es. T22:00:00)
+            let dataPulita = s.split('T')[0];
+            let p = dataPulita.split(/[-/]/); 
+            let y, m, d;
             if (p[0].length === 4) { y = p[0]; m = p[1]; d = p[2]; } else { d = p[0]; m = p[1]; y = p[2]; }
-            const date = new Date(y, m-1, d, 12, 0, 0);
-            return date.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
+            
+            const dateObj = new Date(y, m - 1, d, 12, 0); // Forziamo mezzogiorno per evitare shift
+            return dateObj.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
         }
 
         function updateView() {
             const nome = document.getElementById('all-nome').value;
             if(!nome) return;
             const mie = db.richieste.filter(r => r[3] === nome && (r[4]==='ASSEGNATA' || r[4]==='APERTA'));
-            document.getElementById('mie-guide').innerHTML = mie.map(r => `
+            const container = document.getElementById('mie-guide');
+            
+            container.innerHTML = mie.length === 0 ? '<p class="text-center py-4 text-slate-300 font-bold uppercase text-[10px]">Nessuna richiesta trovata</p>' : 
+                mie.map(r => `
                 <div class="bg-white p-5 rounded-2xl shadow-sm border flex justify-between items-center">
                     <div>
-                        <p class="text-[12px] font-black text-red-600 mb-0.5 uppercase">${fixData(r[1])}</p>
+                        <p class="text-[12px] font-black text-red-600 mb-0.5 uppercase">${formatData(r[1])}</p>
                         <p class="font-bold uppercase text-[11px] text-slate-800 tracking-tighter">ORE ${r[2]} - ${r[4]==='ASSEGNATA' ? 'CON: ' + r[5] : 'IN ATTESA'}</p>
                     </div>
                     <span class="px-2 py-1 rounded-full text-[8px] font-black uppercase ${r[4]==='ASSEGNATA'?'bg-green-100 text-green-700':'bg-orange-100 text-orange-700'}">${r[4]==='ASSEGNATA'?'Confermata':'In Attesa'}</span>
