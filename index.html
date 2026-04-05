@@ -1,170 +1,110 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CRI Gallarate - Allievi</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #f1f5f9; }
+        body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; }
         .cri-red { background-color: #ed1c24; }
         .hidden { display: none; }
-        .nav-active { color: #ed1c24; border-top: 3px solid #ed1c24; }
+        input, select { font-size: 16px !important; }
+        label { font-weight: 800; text-transform: uppercase; font-size: 0.65rem; color: #64748b; margin-bottom: 0.2rem; display: block; margin-left: 0.5rem; }
     </style>
 </head>
-<body class="pb-24 text-slate-800">
+<body class="pb-10">
 
-    <header class="bg-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <div class="w-8 h-8 cri-red rounded-lg flex items-center justify-center text-white font-black text-xs">CRI</div>
-            <h1 class="text-lg font-black uppercase tracking-tighter">Patenti <span class="text-red-600">Gallarate</span></h1>
+    <header class="bg-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center border-b-2 border-slate-100">
+        <div class="flex items-center gap-3">
+            <img src="logo.png" alt="CRI" onerror="this.style.display='none'; document.getElementById('fb-logo').classList.remove('hidden')" class="h-10 w-auto">
+            <div id="fb-logo" class="hidden w-10 h-10 cri-red rounded-lg flex items-center justify-center text-white font-black text-xs">CRI</div>
+            <div class="leading-none">
+                <h1 class="text-lg font-black uppercase tracking-tighter text-slate-800">Area <span class="text-blue-600">Allievi</span></h1>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">CRI Gallarate</p>
+            </div>
         </div>
-        <div id="loading" class="hidden animate-bounce text-red-600 font-bold text-xs">CARICAMENTO...</div>
+        <div id="loading" class="hidden animate-spin text-blue-600"><i class="fas fa-spinner"></i></div>
     </header>
 
-    <main class="p-4 max-w-xl mx-auto">
-
-        <div id="area-allievo" class="tab-content space-y-6">
-            <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100">
-                <h2 class="text-2xl font-black mb-4">Inoltra Disponibilità</h2>
-                <div class="space-y-4">
-                    <select id="all-nome" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-red-500 font-bold"></select>
-                    <input type="date" id="all-data" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold">
-                    <div class="grid grid-cols-2 gap-3">
-                        <input type="time" id="all-inizio" class="p-4 bg-slate-50 rounded-2xl border-none font-bold text-center">
-                        <input type="time" id="all-fine" class="p-4 bg-slate-50 rounded-2xl border-none font-bold text-center">
-                    </div>
-                    <button onclick="inoltra()" class="w-full cri-red text-white py-5 rounded-2xl font-black uppercase shadow-lg shadow-red-100">Invia Proposta</button>
+    <main class="p-4 max-w-xl mx-auto space-y-8">
+        <section class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100">
+            <h2 class="text-xl font-black mb-6 uppercase italic text-slate-800 text-center">Inoltra Disponibilità</h2>
+            <div class="space-y-4">
+                <div>
+                    <label>Chi sei?</label>
+                    <select id="all-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-slate-50 font-bold outline-none focus:border-blue-500"></select>
                 </div>
-            </div>
-            
-            <div class="space-y-3" id="mie-guide">
-                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">Le mie guide</h3>
+                <div>
+                    <label>Giorno</label>
+                    <input type="date" id="all-data" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-slate-50 font-bold outline-none">
                 </div>
-        </div>
-
-        <div id="area-istruttore" class="tab-content hidden space-y-6">
-            <div id="ist-login" class="bg-white p-8 rounded-[2.5rem] shadow-xl text-center">
-                <h2 class="text-xl font-black mb-4">AREA TRAINER</h2>
-                <input type="password" id="ist-pass" placeholder="Password" class="w-full p-4 bg-slate-50 rounded-2xl text-center mb-4 outline-none border-none">
-                <button onclick="loginIst()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black">ACCEDI</button>
-            </div>
-            <div id="ist-content" class="hidden space-y-4">
-                <select id="ist-nome" class="w-full p-4 bg-white rounded-2xl shadow-md font-black border-none outline-none"></select>
-                <h3 class="text-xs font-black text-green-600 uppercase tracking-widest ml-2">Richieste da Accettare</h3>
-                <div id="lista-richieste" class="space-y-3"></div>
-            </div>
-        </div>
-
-        <div id="area-responsabile" class="tab-content hidden space-y-6">
-            <div id="resp-login" class="bg-white p-8 rounded-[2.5rem] shadow-xl text-center">
-                <h2 class="text-xl font-black mb-4 uppercase text-red-600">Admin Panel</h2>
-                <input type="password" id="resp-pass" placeholder="Password" class="w-full p-4 bg-slate-50 rounded-2xl text-center mb-4 outline-none border-none">
-                <button onclick="loginResp()" class="w-full bg-red-600 text-white py-4 rounded-2xl font-black">ACCEDI ADMIN</button>
-            </div>
-            <div id="resp-content" class="hidden">
-                <div class="bg-white p-4 rounded-3xl shadow-lg overflow-x-auto">
-                    <table class="w-full text-left text-[10px] font-bold">
-                        <thead class="border-b uppercase text-slate-400"><tr><th class="p-2">Data</th><th class="p-2">Allievo</th><th class="p-2">Istruttore</th><th class="p-2">Mezzo</th></tr></thead>
-                        <tbody id="resp-tab" class="divide-y"></tbody>
-                    </table>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label>Dalle</label><input type="time" id="all-inizio" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-slate-50 font-bold text-center"></div>
+                    <div><label>Alle</label><input type="time" id="all-fine" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-slate-50 font-bold text-center"></div>
                 </div>
+                <div id="stat-box" class="hidden p-4 bg-blue-50 rounded-2xl text-blue-700 text-center font-black uppercase text-[10px] tracking-widest italic"></div>
+                <button onclick="inoltra()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase shadow-lg shadow-blue-100">Inoltra Proposta</button>
             </div>
-        </div>
+        </section>
 
+        <section class="space-y-4">
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Le Mie Guide (Inoltrate/Confermate)</h3>
+            <div id="mie-guide" class="space-y-3"></div>
+        </section>
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around p-3 z-50">
-        <button onclick="nav('allievo')" id="nav-allievo" class="flex flex-col items-center gap-1 nav-active">
-            <span class="text-[10px] font-black uppercase">Allievi</span>
-        </button>
-        <button onclick="nav('istruttore')" id="nav-istruttore" class="flex flex-col items-center gap-1 text-slate-400">
-            <span class="text-[10px] font-black uppercase">Trainer</span>
-        </button>
-        <button onclick="nav('responsabile')" id="nav-responsabile" class="flex flex-col items-center gap-1 text-slate-400">
-            <span class="text-[10px] font-black uppercase">Admin</span>
-        </button>
-    </nav>
-
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbzb1SHaeD9DGm9_UJYEltjn6ofpScIWC6L2Bna_W3ey0QkZrUqSV-O9WzttezBDXuNt/exec";
+        const API = "https://script.google.com/macros/s/AKfycbyStmx0Dsh9Vu0b0TOgfkfVM90KZsoiltA7h63gswDLK0rYCJMyDviVvcK2IAWWNIqB/exec";
         let db = { anagrafica: [], richieste: [] };
 
-        function load() {
+        async function load() {
             document.getElementById('loading').classList.remove('hidden');
-            fetch(API).then(r => r.json()).then(data => {
-                db = data;
-                render();
-                document.getElementById('loading').classList.add('hidden');
-            });
+            const r = await fetch(API);
+            db = await r.json();
+            document.getElementById('all-nome').innerHTML = '<option value="">-- Seleziona Nome --</option>' + 
+                db.anagrafica.filter(x => x[0] === 'DISCENTE').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
+            document.getElementById('loading').classList.add('hidden');
+            updateView();
         }
 
-        function render() {
-            const allievi = db.anagrafica.filter(r => r[0] === 'DISCENTE');
-            const trainer = db.anagrafica.filter(r => r[0] === 'TRAINER');
-
-            document.getElementById('all-nome').innerHTML = '<option value="">Seleziona Nome</option>' + allievi.map(r => `<option value="${r[1]}">${r[1]}</option>`);
-            document.getElementById('ist-nome').innerHTML = '<option value="">Tuo Nome Trainer</option>' + trainer.map(r => `<option value="${r[1]}">${r[1]}</option>`);
-            
-            // Render Richieste Aperte
-            document.getElementById('lista-richieste').innerHTML = db.richieste.filter(r => r[4] === 'APERTA').map(r => `
-                <div class="bg-white p-5 rounded-[2rem] shadow-md border-l-8 border-green-500">
-                    <div class="flex justify-between text-[10px] font-black text-slate-400"><span>${pulisciData(r[1])}</span><span>INOLTRATA</span></div>
-                    <h4 class="text-lg font-black uppercase mt-1">${r[3]}</h4>
-                    <p class="text-2xl font-black text-green-600">${r[2]}</p>
-                    <button onclick="accetta('${r[0]}', '${r[3]}', '${r[1]}', '${r[2]}')" class="mt-3 w-full bg-slate-900 text-white py-3 rounded-2xl font-black text-xs uppercase italic">Accetta Guida</button>
+        function updateView() {
+            const nome = document.getElementById('all-nome').value;
+            if(!nome) return;
+            const mie = db.richieste.filter(r => r[3] === nome && (r[4]==='ASSEGNATA' || r[4]==='APERTA'));
+            document.getElementById('mie-guide').innerHTML = mie.map(r => `
+                <div class="bg-white p-4 rounded-2xl shadow-sm border flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400">${pulisciData(r[1])} - ${r[2]}</p>
+                        <p class="font-bold uppercase text-xs">${r[5] || 'In attesa...'}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="px-2 py-1 rounded-full text-[8px] font-black uppercase ${r[4]==='ASSEGNATA'?'bg-green-100 text-green-700':'bg-blue-100 text-blue-700'}">${r[4]==='ASSEGNATA'?'Confermata':'Inoltrata'}</span>
+                        <p class="text-[9px] font-black text-red-600 mt-1 uppercase">${r[6] || ''}</p>
+                    </div>
                 </div>
-            `).join('');
-
-            // Render Tabella Admin
-            document.getElementById('resp-tab').innerHTML = db.richieste.map(r => `
-                <tr class="border-b">
-                    <td class="p-2">${pulisciData(r[1])}<br>${r[2]}</td>
-                    <td class="p-2 uppercase">${r[3]}</td>
-                    <td class="p-2 uppercase text-red-600">${r[5] || '---'}</td>
-                    <td class="p-2 font-mono">${r[6] || '---'}</td>
-                </tr>
             `).reverse().join('');
+            
+            const p = db.anagrafica.find(x => x[1] === nome);
+            const f = db.richieste.filter(r => r[3] === nome && r[4] === 'ASSEGNATA').length;
+            const box = document.getElementById('stat-box');
+            box.classList.remove('hidden');
+            box.innerText = `Percorso: ${f} guide su ${p[3]==='5'?'6':'4'}`;
         }
 
-        function inoltra() {
-            const data = {
-                azione: "INOLTRA",
-                allievo: document.getElementById('all-nome').value,
-                giorno: document.getElementById('all-data').value,
-                oraInizio: document.getElementById('all-inizio').value,
-                oraFine: document.getElementById('all-fine').value
-            };
-            if(!data.allievo || !data.giorno) return alert("Mancano dati!");
-            send(data);
-        }
-
-        function accetta(id, allievo, data, ora) {
-            const ist = document.getElementById('ist-nome').value;
-            if(!ist) return alert("Seleziona il tuo nome trainer!");
-            if(confirm(`Accetti la guida con ${allievo}?`)) {
-                send({ azione: "ACCETTA", idRichiesta: id, allievo: allievo, istruttore: ist, dataGuida: data, oraGuida: ora });
-            }
-        }
-
-        function send(p) {
+        async function inoltra() {
+            const d = { azione: "INOLTRA", allievo: document.getElementById('all-nome').value, giorno: document.getElementById('all-data').value, oraInizio: document.getElementById('all-inizio').value, oraFine: document.getElementById('all-fine').value };
+            if(!d.allievo || !d.giorno || !d.oraInizio) return alert("Mancano dati!");
             document.getElementById('loading').classList.remove('hidden');
-            fetch(API, { method: 'POST', body: JSON.stringify(p) })
-            .then(r => r.text()).then(t => { alert(t); load(); });
+            const res = await fetch(API, { method: 'POST', body: JSON.stringify(d) });
+            alert(await res.text());
+            location.reload();
         }
 
-        function nav(tab) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-            document.getElementById('area-' + tab).classList.remove('hidden');
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active'));
-            document.getElementById('nav-' + tab).classList.add('nav-active');
-        }
-
-        function loginIst() { if(document.getElementById('ist-pass').value === "Guide26!") { document.getElementById('ist-login').classList.add('hidden'); document.getElementById('ist-content').classList.remove('hidden'); } }
-        function loginResp() { if(document.getElementById('resp-pass').value === "Pat3nti26!") { document.getElementById('resp-login').classList.add('hidden'); document.getElementById('resp-content').classList.remove('hidden'); } }
-        function pulisciData(d) { if(!d) return ""; if(typeof d === 'string' && d.includes('T')) { let p = d.split('T')[0].split('-'); return p[2]+'/'+p[1]+'/'+p[0]; } return d; }
-
-        load();
+        function pulisciData(d) { if(typeof d === 'string' && d.includes('T')) { let p = d.split('T')[0].split('-'); return p[2]+'/'+p[1]+'/'+p[0]; } return d; }
+        window.onload = load;
     </script>
 </body>
 </html>
