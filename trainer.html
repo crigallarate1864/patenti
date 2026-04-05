@@ -38,12 +38,12 @@
         </div>
 
         <section class="space-y-4">
-            <h3 class="text-[10px] font-black text-green-600 uppercase tracking-widest ml-2 italic text-center text-slate-400">Proposte Disponibili (Clicca per espandere)</h3>
+            <h3 class="text-[10px] font-black text-green-600 uppercase tracking-widest ml-2 italic text-center text-slate-400">Proposte Disponibili</h3>
             <div id="lista-proposte" class="space-y-4"></div>
         </section>
 
         <section class="space-y-4">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 italic text-center">I Miei Impegni Confermati</h3>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 italic text-center">I Miei Impegni</h3>
             <div id="miei-impegni" class="space-y-3"></div>
         </section>
     </main>
@@ -57,26 +57,28 @@
             try {
                 const r = await fetch(API);
                 db = await r.json();
-                
                 document.getElementById('ist-nome').innerHTML = '<option value="">-- Chi sei? --</option>' + 
                     db.anagrafica.filter(x => x[0] === 'TRAINER').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
-                
                 renderProposte();
                 updateView();
-            } catch(e) { console.error(e); }
+            } catch(e) {}
             document.getElementById('loading').classList.add('hidden');
+        }
+
+        function formattazioneEstesa(dataStr) {
+            if(!dataStr) return "";
+            let parti = dataStr.split(/[-T/]/);
+            let y, m, d;
+            if (parti[0].length === 4) { y = parti[0]; m = parti[1]; d = parti[2]; } 
+            else { d = parti[0]; m = parti[1]; y = parti[2]; }
+            const dataObj = new Date(y, m - 1, d, 12, 0, 0);
+            return dataObj.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
         }
 
         function renderProposte() {
             const container = document.getElementById('lista-proposte');
             const aperte = db.richieste.filter(r => r[4] === 'APERTA');
-
-            if (aperte.length === 0) {
-                container.innerHTML = '<p class="text-center py-10 text-slate-300 font-bold uppercase text-[10px]">Nessuna proposta attiva</p>';
-                return;
-            }
-
-            // Raggruppa per Allievo
+            if (aperte.length === 0) { container.innerHTML = '<p class="text-center py-10 text-slate-300 font-bold uppercase text-[10px]">Nessuna proposta attiva</p>'; return; }
             const grouped = aperte.reduce((acc, r) => {
                 const allievo = r[3]; const data = r[1];
                 if (!acc[allievo]) acc[allievo] = {};
@@ -84,64 +86,32 @@
                 acc[allievo][data].push(r); return acc;
             }, {});
 
-            let html = "";
-            let idx = 0;
+            let html = ""; let idx = 0;
             for (const allievo in grouped) {
-                idx++;
-                const count = Object.values(grouped[allievo]).flat().length;
-                
-                html += `
-                <div class="bg-white rounded-[2rem] shadow-lg border border-slate-100 overflow-hidden">
-                    <div onclick="toggleAccordion('acc-${idx}')" class="p-5 flex justify-between items-center cursor-pointer bg-white hover:bg-slate-50 transition">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-green-50 text-green-600 rounded-full flex items-center justify-center font-black text-xs">${count}</div>
-                            <h4 class="text-lg font-black uppercase text-slate-800 tracking-tighter leading-none">${allievo}</h4>
-                        </div>
-                        <i id="icon-acc-${idx}" class="fas fa-chevron-down text-slate-300 rotate-icon"></i>
-                    </div>
-                    
-                    <div id="acc-${idx}" class="accordion-content border-t border-slate-50">
-                        <div class="p-5 space-y-6">`;
-
+                idx++; const count = Object.values(grouped[allievo]).flat().length;
+                html += `<div class="bg-white rounded-[2rem] shadow-lg border border-slate-100 overflow-hidden"><div onclick="toggleAccordion('acc-${idx}')" class="p-5 flex justify-between items-center cursor-pointer bg-white hover:bg-slate-50 transition"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-green-50 text-green-600 rounded-full flex items-center justify-center font-black text-xs">${count}</div><h4 class="text-lg font-black uppercase text-slate-800 tracking-tighter leading-none">${allievo}</h4></div><i id="icon-acc-${idx}" class="fas fa-chevron-down text-slate-300 rotate-icon"></i></div><div id="acc-${idx}" class="accordion-content border-t border-slate-50"><div class="p-5 space-y-6">`;
                 for (const data in grouped[allievo]) {
-                    html += `
-                        <div>
-                            <p class="text-[11px] font-black text-red-600 uppercase mb-2"><i class="far fa-calendar-alt mr-1"></i> ${formattazioneEstesa(data)}</p>
-                            <div class="flex flex-wrap gap-2">
-                                ${grouped[allievo][data].map(slot => `
-                                    <button onclick="accetta('${slot[0]}','${allievo}','${slot[1]}','${slot[2]}')" 
-                                            class="bg-slate-900 text-white px-4 py-2 rounded-xl font-black text-[11px] flex items-center gap-2 shadow-sm transition active:scale-95 hover:bg-green-600">
-                                        <i class="far fa-clock opacity-50"></i> ${slot[2]}
-                                    </button>
-                                `).join('')}
-                            </div>
-                        </div>`;
+                    html += `<div><p class="text-[12px] font-black text-red-600 uppercase mb-2 italic"><i class="far fa-calendar-alt mr-1"></i> ${formattazioneEstesa(data)}</p><div class="flex flex-wrap gap-2">${grouped[allievo][data].map(slot => `<button onclick="accetta('${slot[0]}','${allievo}','${slot[1]}','${slot[2]}')" class="bg-slate-900 text-white px-4 py-2 rounded-xl font-black text-[11px] shadow-sm transition active:scale-95 hover:bg-green-600">${slot[2]}</button>`).join('')}</div></div>`;
                 }
-
                 html += `</div></div></div>`;
             }
             container.innerHTML = html;
         }
 
-        function toggleAccordion(id) {
-            const content = document.getElementById(id);
-            const icon = document.getElementById('icon-' + id);
-            content.classList.toggle('open');
-            icon.classList.toggle('open');
-        }
+        function toggleAccordion(id) { document.getElementById(id).classList.toggle('open'); document.getElementById('icon-' + id).classList.toggle('open'); }
 
         function updateView() {
             const nome = document.getElementById('ist-nome').value;
             if(!nome) return;
             const miei = db.richieste.filter(r => r[5] === nome && r[4] === 'ASSEGNATA');
-            document.getElementById('miei-impegni').innerHTML = miei.length === 0 ? '<p class="text-center py-4 text-slate-300 font-bold uppercase text-[10px]">Nessun impegno confermato</p>' :
+            document.getElementById('miei-impegni').innerHTML = miei.length === 0 ? '<p class="text-center py-4 text-slate-300 font-bold uppercase text-[10px]">Nessun impegno</p>' :
                 miei.map(r => `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-slate-900 flex justify-between items-center text-[11px] font-bold">
                     <div class="flex gap-3 items-center text-left">
-                         <button onclick="scaricaICS('${pulisciData(r[1])}','${r[2]}','Guida con ${r[3]}','Mezzo: ${r[6]||'Vedi portale'}')" class="text-slate-500 bg-slate-50 w-8 h-8 rounded-lg flex items-center justify-center shadow-sm hover:text-green-600"><i class="fas fa-calendar-plus text-lg"></i></button>
+                         <button onclick="scaricaICS('${pulisciData(r[1])}','${r[2]}','Guida con ${r[3]}','')" class="text-slate-500 bg-slate-50 w-9 h-9 rounded-xl flex items-center justify-center shadow-sm hover:text-green-600"><i class="fas fa-calendar-plus text-lg"></i></button>
                          <div>
-                            <p class="uppercase text-red-600 text-[10px] leading-none mb-1 font-black">${formattazioneEstesa(r[1])}</p>
-                            <p class="uppercase text-slate-800 font-black text-xs">ORE ${r[2]} - ALLIEVO: ${r[3]}</p>
+                            <p class="uppercase text-red-600 text-[10px] font-black leading-none mb-1">${formattazioneEstesa(r[1])}</p>
+                            <p class="uppercase text-slate-800 font-black">ORE ${r[2]} - ${r[3]}</p>
                          </div>
                     </div>
                     <p class="text-red-600 font-black tracking-tighter">${r[6] || '---'}</p>
@@ -149,41 +119,25 @@
             `).reverse().join('');
         }
 
-        function formattazioneEstesa(dataStr) {
-            if(!dataStr) return "";
-            let d;
-            if(dataStr.includes('T')) d = new Date(dataStr.split('T')[0]);
-            else if(dataStr.includes('-')) d = new Date(dataStr);
-            else if(dataStr.includes('/')) { let p = dataStr.split('/'); d = new Date(p[2], p[1]-1, p[0]); }
-            return d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
-        }
-
         function scaricaICS(dataStr, oraRange, titolo, desc) {
-            const [g, m, a] = dataStr.split('/');
+            let parti = dataStr.split('/');
             const oraInizio = oraRange.split(' - ')[0];
-            const oraFine = oraRange.split(' - ')[1];
             const [oreI, minI] = oraInizio.split(':');
-            const [oreF, minF] = oraFine.split(':');
-            const dStart = new Date(a, m - 1, g, oreI, minI);
-            const dEnd = new Date(a, m - 1, g, oreF, minF);
-            const formatICS = (d) => d.toISOString().replace(/-|:|\.\d+/g, '');
-            const icsMSG = ["BEGIN:VCALENDAR","VERSION:2.0","BEGIN:VEVENT","DTSTART:"+formatICS(dStart),"DTEND:"+formatICS(dEnd),"SUMMARY:"+titolo,"DESCRIPTION:"+desc,"LOCATION:CRI Gallarate","END:VEVENT","END:VCALENDAR"].join("\n");
-            const blob = new Blob([icsMSG], { type: 'text/calendar;charset=utf-8' });
+            const dS = new Date(parti[2], parti[1]-1, parti[0], oreI, minI);
+            const dE = new Date(dS.getTime() + 75 * 60000);
+            const f = (d) => d.toISOString().replace(/-|:|\.\d+/g, '');
+            const ics = ["BEGIN:VCALENDAR","VERSION:2.0","BEGIN:VEVENT","DTSTART:"+f(dS),"DTEND:"+f(dE),"SUMMARY:"+titolo,"DESCRIPTION:"+desc,"LOCATION:CRI Gallarate","END:VEVENT","END:VCALENDAR"].join("\n");
+            const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
             const link = document.createElement('a'); link.href = window.URL.createObjectURL(blob);
-            link.setAttribute('download', 'impegno.ics'); document.body.appendChild(link);
-            link.click(); document.body.removeChild(link);
+            link.setAttribute('download', 'impegno.ics'); document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
         async function accetta(id, allievo, data, ora) {
             const trainer = document.getElementById('ist-nome').value;
-            if(!trainer) return alert("Seleziona prima il tuo nome!");
-            if(!confirm(`Confermi l'accettazione della guida di ${allievo} il ${pulisciData(data)} ore ${ora}?`)) return;
-            document.getElementById('loading').classList.remove('hidden');
-            try {
-                const res = await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ACCETTA", idRichiesta: id, allievo: allievo, istruttore: trainer, dataGuida: data, oraGuida: ora }) });
-                alert(await res.text()); load();
-            } catch(e) { alert("Errore"); }
-            document.getElementById('loading').classList.add('hidden');
+            if(!trainer) return alert("Seleziona il tuo nome!");
+            if(!confirm(`Accetti la guida di ${allievo} il ${pulisciData(data)} ore ${ora}?`)) return;
+            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ACCETTA", idRichiesta: id, allievo: allievo, istruttore: trainer, dataGuida: data, oraGuida: ora }) });
+            alert(await res.text()); load();
         }
 
         function pulisciData(d) { if(typeof d === 'string' && d.includes('T')) { let p = d.split('T')[0].split('-'); return p[2]+'/'+p[1]+'/'+p[0]; } return d; }
