@@ -43,7 +43,7 @@
         </section>
 
         <section class="space-y-4">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 italic text-center">I Miei Impegni</h3>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 italic text-center text-slate-400">I Miei Impegni</h3>
             <div id="miei-impegni" class="space-y-3"></div>
         </section>
     </main>
@@ -65,20 +65,30 @@
             document.getElementById('loading').classList.add('hidden');
         }
 
+        // --- FIX DATA DEFINITIVO (Pura manipolazione stringhe) ---
         function formattazioneEstesa(dataStr) {
             if(!dataStr) return "";
-            let parti = dataStr.split(/[-T/]/);
-            let y, m, d;
-            if (parti[0].length === 4) { y = parti[0]; m = parti[1]; d = parti[2]; } 
-            else { d = parti[0]; m = parti[1]; y = parti[2]; }
-            const dataObj = new Date(y, m - 1, d, 12, 0, 0);
-            return dataObj.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
+            // Formati possibili: YYYY-MM-DD o DD/MM/YYYY
+            let d, m, y;
+            if(dataStr.includes('-')) {
+                let p = dataStr.split('-');
+                y = p[0]; m = p[1]; d = p[2];
+            } else {
+                let p = dataStr.split('/');
+                d = p[0]; m = p[1]; y = p[2];
+            }
+            const mesi = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+            const dataPura = new Date(y, m-1, d);
+            const giorni = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
+            
+            return `${giorni[dataPura.getDay()]} ${parseInt(d)} ${mesi[parseInt(m)-1]} ${y}`.toUpperCase();
         }
 
         function renderProposte() {
             const container = document.getElementById('lista-proposte');
             const aperte = db.richieste.filter(r => r[4] === 'APERTA');
             if (aperte.length === 0) { container.innerHTML = '<p class="text-center py-10 text-slate-300 font-bold uppercase text-[10px]">Nessuna proposta attiva</p>'; return; }
+            
             const grouped = aperte.reduce((acc, r) => {
                 const allievo = r[3]; const data = r[1];
                 if (!acc[allievo]) acc[allievo] = {};
@@ -108,7 +118,7 @@
                 miei.map(r => `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-slate-900 flex justify-between items-center text-[11px] font-bold">
                     <div class="flex gap-3 items-center text-left">
-                         <button onclick="scaricaICS('${pulisciData(r[1])}','${r[2]}','Guida con ${r[3]}','')" class="text-slate-500 bg-slate-50 w-9 h-9 rounded-xl flex items-center justify-center shadow-sm hover:text-green-600"><i class="fas fa-calendar-plus text-lg"></i></button>
+                         <button onclick="scaricaICS('${r[1]}','${r[2]}','Guida con ${r[3]}','')" class="text-slate-500 bg-slate-50 w-9 h-9 rounded-xl flex items-center justify-center shadow-sm hover:text-green-600"><i class="fas fa-calendar-plus text-lg"></i></button>
                          <div>
                             <p class="uppercase text-red-600 text-[10px] font-black leading-none mb-1">${formattazioneEstesa(r[1])}</p>
                             <p class="uppercase text-slate-800 font-black">ORE ${r[2]} - ${r[3]}</p>
@@ -120,12 +130,14 @@
         }
 
         function scaricaICS(dataStr, oraRange, titolo, desc) {
-            let parti = dataStr.split('/');
+            let d, m, y;
+            if(dataStr.includes('-')) { let p = dataStr.split('-'); y = p[0]; m = p[1]; d = p[2]; }
+            else { let p = dataStr.split('/'); d = p[0]; m = p[1]; y = p[2]; }
             const oraInizio = oraRange.split(' - ')[0];
             const [oreI, minI] = oraInizio.split(':');
-            const dS = new Date(parti[2], parti[1]-1, parti[0], oreI, minI);
+            const dS = new Date(y, m-1, d, oreI, minI);
             const dE = new Date(dS.getTime() + 75 * 60000);
-            const f = (d) => d.toISOString().replace(/-|:|\.\d+/g, '');
+            const f = (date) => date.toISOString().replace(/-|:|\.\d+/g, '');
             const ics = ["BEGIN:VCALENDAR","VERSION:2.0","BEGIN:VEVENT","DTSTART:"+f(dS),"DTEND:"+f(dE),"SUMMARY:"+titolo,"DESCRIPTION:"+desc,"LOCATION:CRI Gallarate","END:VEVENT","END:VCALENDAR"].join("\n");
             const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
             const link = document.createElement('a'); link.href = window.URL.createObjectURL(blob);
@@ -135,12 +147,11 @@
         async function accetta(id, allievo, data, ora) {
             const trainer = document.getElementById('ist-nome').value;
             if(!trainer) return alert("Seleziona il tuo nome!");
-            if(!confirm(`Accetti la guida di ${allievo} il ${pulisciData(data)} ore ${ora}?`)) return;
+            if(!confirm(`Accetti la guida di ${allievo} il ${data} ore ${ora}?`)) return;
             const res = await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ACCETTA", idRichiesta: id, allievo: allievo, istruttore: trainer, dataGuida: data, oraGuida: ora }) });
             alert(await res.text()); load();
         }
 
-        function pulisciData(d) { if(typeof d === 'string' && d.includes('T')) { let p = d.split('T')[0].split('-'); return p[2]+'/'+p[1]+'/'+p[0]; } return d; }
         window.onload = load;
     </script>
 </body>
