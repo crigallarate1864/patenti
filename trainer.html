@@ -2,94 +2,109 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRI Gallarate - Trainer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CRI Gallarate - Allievi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; }
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-        .accordion-content.open { max-height: 1000px; }
+        .cri-red { background-color: #ed1c24; }
+        input, select { font-size: 16px !important; }
     </style>
 </head>
 <body class="pb-10">
 
     <header class="bg-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center border-b-2 border-slate-100">
-        <div class="flex items-center gap-3"><img src="logo.png" alt="CRI" class="h-10"><h1 class="text-lg font-black uppercase text-slate-800">Area <span class="text-green-600">Trainer</span></h1></div>
-        <div id="loading" class="hidden animate-spin text-green-600"><i class="fas fa-spinner"></i></div>
+        <div class="flex items-center gap-3">
+            <img src="logo.png" alt="CRI" onerror="this.src='https://via.placeholder.com/40?text=CRI'" class="h-10 w-auto">
+            <h1 class="text-lg font-black uppercase text-slate-800">Area <span class="text-blue-600">Allievi</span></h1>
+        </div>
+        <div id="loading" class="hidden animate-spin text-blue-600"><i class="fas fa-spinner"></i></div>
     </header>
 
-    <main class="p-4 max-w-xl mx-auto space-y-6">
-        <select id="ist-nome" onchange="updateView()" class="w-full p-4 bg-white rounded-2xl shadow-md font-black border-none outline-none"></select>
-        
-        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center italic">Proposte Disponibili (Clicca Nome)</h3>
-        <div id="lista-proposte" class="space-y-4"></div>
+    <main class="p-4 max-w-xl mx-auto space-y-8">
+        <div id="error-box" class="hidden p-4 bg-red-600 text-white rounded-xl text-xs font-bold shadow-lg"></div>
 
-        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center italic">I Miei Impegni</h3>
-        <div id="miei-impegni" class="space-y-3"></div>
+        <section class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100">
+            <h2 class="text-xl font-black mb-6 uppercase italic text-center text-slate-800">Inoltra Disponibilità</h2>
+            <div class="space-y-4">
+                <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Chi sei?</label>
+                <select id="all-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none"></select></div>
+                <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Giorno</label>
+                <input type="date" id="all-data" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none"></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Dalle</label><input type="time" id="all-inizio" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center"></div>
+                    <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Alle</label><input type="time" id="all-fine" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center"></div>
+                </div>
+                <button onclick="inoltra()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase shadow-lg shadow-blue-100 active:scale-95 transition">Inoltra Proposta</button>
+            </div>
+        </section>
+
+        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center italic">Le Mie Richieste</h3>
+        <div id="mie-guide" class="space-y-3"></div>
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbz1d4pHO2lvq-Us-zxTn9XGmknOnEfrhQubyPsXhyKzDOfp7juaN9i0atiKPCaWvDcz/exec";
+        const API = "https://script.google.com/macros/s/AKfycbzisixq5H1LEQnvl77PV5QIBbmPSDRNEWLS4ZM2AiD7j6L5wRnZXSeac9oyAcTARjbD/exec";
         let db = { anagrafica: [], richieste: [] };
 
         async function load() {
+            const errBox = document.getElementById('error-box');
             document.getElementById('loading').classList.remove('hidden');
-            const r = await fetch(API);
-            db = await r.json();
-            document.getElementById('ist-nome').innerHTML = '<option value="">-- Chi sei? --</option>' + 
-                db.anagrafica.filter(x => x[0] === 'TRAINER').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
-            renderProposte();
-            updateView();
+            try {
+                const r = await fetch(API);
+                if (!r.ok) throw new Error("Risposta del server non valida. Controlla il deployment.");
+                db = await r.json();
+                
+                document.getElementById('all-nome').innerHTML = '<option value="">-- Seleziona Nome --</option>' + 
+                    db.anagrafica.filter(x => x[0].toUpperCase() === 'DISCENTE').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
+                
+                errBox.classList.add('hidden');
+                updateView();
+            } catch(e) {
+                errBox.innerText = "ERRORE DI CARICAMENTO: " + e.message + ". Assicurati che l'URL sia corretto e il deployment sia impostato su 'Chiunque'.";
+                errBox.classList.remove('hidden');
+            }
             document.getElementById('loading').classList.add('hidden');
         }
 
-        function fixData(s) {
-            let p = s.split(/[-T/]/); let y, m, d;
+        // FUNZIONE ANTI-BUG DATA: Legge la stringa pura
+        function formatData(s) {
+            if(!s) return "";
+            // Rimuove eventuali orari se presenti (es. T22:00:00)
+            let dataPulita = s.split('T')[0];
+            let p = dataPulita.split(/[-/]/); 
+            let y, m, d;
             if (p[0].length === 4) { y = p[0]; m = p[1]; d = p[2]; } else { d = p[0]; m = p[1]; y = p[2]; }
-            const date = new Date(y, m-1, d, 12, 0, 0);
-            return date.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
-        }
-
-        function renderProposte() {
-            const container = document.getElementById('lista-proposte');
-            const aperte = db.richieste.filter(r => r[4] === 'APERTA');
-            const grouped = aperte.reduce((acc, r) => { (acc[r[3]] = acc[r[3]] || []).push(r); return acc; }, {});
-
-            let h = ""; Object.keys(grouped).forEach((allievo, i) => {
-                h += `<div class="bg-white rounded-[2rem] shadow-lg border border-slate-100 overflow-hidden">
-                    <div onclick="document.getElementById('acc-${i}').classList.toggle('open')" class="p-5 flex justify-between items-center cursor-pointer hover:bg-slate-50">
-                        <div class="flex items-center gap-3"><div class="w-8 h-8 bg-green-50 text-green-600 rounded-full flex items-center justify-center font-black text-xs">${grouped[allievo].length}</div><h4 class="font-black uppercase text-slate-800">${allievo}</h4></div>
-                        <i class="fas fa-chevron-down text-slate-300"></i>
-                    </div>
-                    <div id="acc-${i}" class="accordion-content bg-slate-50/30 p-5 space-y-4">`;
-                grouped[allievo].forEach(r => {
-                    h += `<div class="flex justify-between items-center border-b pb-2 border-slate-200">
-                        <p class="text-[10px] font-bold uppercase text-red-600">${fixData(r[1])}<br><span class="text-slate-800">ORE ${r[2]}</span></p>
-                        <button onclick="accetta('${r[0]}','${allievo}','${r[1]}','${r[2]}')" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase">Accetta</button>
-                    </div>`;
-                });
-                h += `</div></div>`;
-            });
-            container.innerHTML = h || '<p class="text-center py-10 text-slate-300 font-black uppercase text-xs">Nessuna proposta</p>';
+            
+            const dateObj = new Date(y, m - 1, d, 12, 0); // Forziamo mezzogiorno per evitare shift
+            return dateObj.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
         }
 
         function updateView() {
-            const n = document.getElementById('ist-nome').value; if(!n) return;
-            const miei = db.richieste.filter(r => r[5] === n && r[4] === 'ASSEGNATA');
-            document.getElementById('miei-impegni').innerHTML = miei.map(r => `
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-slate-900 flex justify-between items-center">
-                    <p class="text-[10px] font-bold uppercase">${fixData(r[1])} - ${r[2]}<br>${r[3]}</p>
-                    <p class="text-red-600 font-black text-xs">${r[6] || '---'}</p>
-                </div>`).reverse().join('');
+            const nome = document.getElementById('all-nome').value;
+            if(!nome) return;
+            const mie = db.richieste.filter(r => r[3] === nome && (r[4]==='ASSEGNATA' || r[4]==='APERTA'));
+            const container = document.getElementById('mie-guide');
+            
+            container.innerHTML = mie.length === 0 ? '<p class="text-center py-4 text-slate-300 font-bold uppercase text-[10px]">Nessuna richiesta trovata</p>' : 
+                mie.map(r => `
+                <div class="bg-white p-5 rounded-2xl shadow-sm border flex justify-between items-center">
+                    <div>
+                        <p class="text-[12px] font-black text-red-600 mb-0.5 uppercase">${formatData(r[1])}</p>
+                        <p class="font-bold uppercase text-[11px] text-slate-800 tracking-tighter">ORE ${r[2]} - ${r[4]==='ASSEGNATA' ? 'CON: ' + r[5] : 'IN ATTESA'}</p>
+                    </div>
+                    <span class="px-2 py-1 rounded-full text-[8px] font-black uppercase ${r[4]==='ASSEGNATA'?'bg-green-100 text-green-700':'bg-orange-100 text-orange-700'}">${r[4]==='ASSEGNATA'?'Confermata':'In Attesa'}</span>
+                </div>
+            `).reverse().join('');
         }
 
-        async function accetta(id, a, d, o) {
-            const ist = document.getElementById('ist-nome').value; if(!ist) return alert("Scegli il tuo nome!");
-            if(!confirm("Accetti questa guida?")) return;
+        async function inoltra() {
+            const d = { azione: "INOLTRA", allievo: document.getElementById('all-nome').value, giorno: document.getElementById('all-data').value, oraInizio: document.getElementById('all-inizio').value, oraFine: document.getElementById('all-fine').value };
+            if(!d.allievo || !d.giorno) return alert("Mancano dati!");
             document.getElementById('loading').classList.remove('hidden');
-            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ACCETTA", idRichiesta: id, allievo: a, istruttore: ist, dataGuida: d, oraGuida: o }) });
+            await fetch(API, { method: 'POST', body: JSON.stringify(d) });
             location.reload();
         }
         window.onload = load;
