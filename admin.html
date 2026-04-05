@@ -12,24 +12,22 @@
         .cri-red { background-color: #ed1c24; }
         .tab-active { border-bottom: 4px solid #ed1c24; color: #ed1c24; font-weight: 900; }
         .hidden { display: none; }
-        .card { background: white; border-radius: 1.5rem; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+        .card { background: white; border-radius: 1.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body class="pb-20">
 
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 px-4 py-3">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <img src="logo.png" alt="CRI" class="w-16 h-auto" onerror="this.style.display='none'">
-                <div>
-                    <h1 class="text-xl font-black uppercase leading-none">Pannello <span class="text-red-600">Admin</span></h1>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">CRI Gallarate</p>
-                </div>
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <img src="logo.png" alt="CRI" class="w-16 h-auto" onerror="this.style.display='none'">
+            <div>
+                <h1 class="text-xl font-black uppercase leading-none">Pannello <span class="text-red-600">Admin</span></h1>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">CRI Gallarate</p>
             </div>
-            <button onclick="init()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:text-red-600 transition">
-                <i id="sync-icon" class="fas fa-sync-alt"></i>
-            </button>
         </div>
+        <button onclick="init()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:text-red-600 transition">
+            <i id="sync-icon" class="fas fa-sync-alt"></i>
+        </button>
     </header>
 
     <nav class="bg-white border-b border-slate-200 px-4 mb-6">
@@ -42,18 +40,16 @@
     <main class="p-4 max-w-4xl mx-auto">
         
         <div id="sec-guide" class="space-y-6">
-            <div class="flex gap-2 p-1 bg-slate-200 rounded-2xl w-fit mx-auto sm:mx-0">
+            <div class="flex gap-2 p-1 bg-slate-200 rounded-2xl w-fit">
                 <button onclick="filterStatus('APERTA')" id="f-aperta" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase transition bg-white shadow-sm">In Attesa</button>
                 <button onclick="filterStatus('ASSEGNATA')" id="f-assegnata" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase transition text-slate-500">Confermate</button>
             </div>
 
-            <div id="lista-guide" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                </div>
+            <div id="lista-guide" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
         <div id="sec-staff" class="hidden space-y-6">
             <div class="card p-6 border-l-8 border-red-600">
-                <h3 class="font-black uppercase text-xs mb-4 text-slate-400">Aggiungi Trainer o Discente</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     <select id="add-ruolo" class="p-3 bg-slate-50 rounded-xl font-bold border-none outline-none shadow-inner">
                         <option value="DISCENTE">DISCENTE</option>
@@ -65,26 +61,14 @@
                     <button onclick="addPersona()" class="bg-red-600 text-white font-black py-3 rounded-xl uppercase text-xs shadow-lg active:scale-95 transition">Aggiungi</button>
                 </div>
             </div>
-
             <div class="card overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-slate-900 text-slate-400 font-black uppercase tracking-widest">
-                            <tr>
-                                <th class="p-4">Ruolo</th>
-                                <th class="p-4">Cognome Nome</th>
-                                <th class="p-4 text-center">Azioni</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lista-staff" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
+                <table class="w-full text-left text-xs"><tbody id="lista-staff" class="divide-y divide-slate-100"></tbody></table>
             </div>
         </div>
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbz1d4pHO2lvq-Us-zxTn9XGmknOnEfrhQubyPsXhyKzDOfp7juaN9i0atiKPCaWvDcz/exec";
+        const API = "https://script.google.com/macros/s/AKfycbySLTDbfnFg9wayDxEnCCi5oChr4sS4xycW7_EB-4pL_uM-gBnVYXkWTA3BQBrtvGNl/exec";
         let db = { anagrafica: [], richieste: [] };
         let currentFilter = 'APERTA';
 
@@ -92,91 +76,57 @@
             document.getElementById('sync-icon').classList.add('fa-spin');
             try {
                 const r = await fetch(API);
-                const data = await r.json();
-                
-                // Salvataggio sicuro: se mancano proprietà, evita il crash
-                db.anagrafica = data.anagrafica || [];
-                db.richieste = data.richieste || [];
-                
+                db = await r.json();
                 renderGuide();
                 renderStaff();
-            } catch (e) {
-                console.error(e);
-                alert("Errore caricamento. Controlla che il database non sia vuoto.");
-            }
+            } catch (e) { alert("Errore caricamento dati"); }
             document.getElementById('sync-icon').classList.remove('fa-spin');
-        }
-
-        function formatDataAdmin(s) {
-            if(!s || s === "Data") return "";
-            let p = s.split('T')[0].split(/[-/]/);
-            let y, m, d;
-            if (p[0].length === 4) { y = p[0]; m = p[1]; d = p[2]; } else { d = p[0]; m = p[1]; y = p[2]; }
-            const dateObj = new Date(y, m - 1, d, 12, 0);
-            return dateObj.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
         }
 
         function renderGuide() {
             const container = document.getElementById('lista-guide');
-            // Salta l'intestazione del foglio Excel se presente
-            const richiestePure = db.richieste.filter(r => r[0] !== "ID");
-            const filtered = richiestePure.filter(r => r[4] === currentFilter);
-
-            if (filtered.length === 0) {
-                container.innerHTML = `<p class="col-span-full text-center py-10 text-slate-300 font-bold uppercase text-[10px] tracking-widest">Nessuna richiesta in questa categoria</p>`;
-                return;
-            }
-
+            const filtered = db.richieste.filter(r => r[4] === currentFilter && r[0] !== "ID");
+            
             container.innerHTML = filtered.map(r => `
-                <div class="card p-5 space-y-4 border-l-4 ${r[4] === 'ASSEGNATA' ? 'border-green-500' : 'border-orange-400'}">
+                <div class="card p-5 space-y-4">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-[10px] font-black text-red-600 uppercase tracking-tighter">${formatDataAdmin(r[1])}</p>
-                            <h4 class="font-black text-slate-800 uppercase text-lg leading-tight tracking-tighter">${r[3]}</h4>
+                            <p class="text-[10px] font-black text-red-600 uppercase">${r[1]}</p>
+                            <h4 class="font-black text-slate-800 uppercase text-lg leading-tight">${r[3]}</h4>
                             <p class="text-xs font-bold text-slate-400 uppercase mt-1">Ore: ${r[2]}</p>
                         </div>
                         <button onclick="delGuida('${r[0]}')" class="text-slate-300 hover:text-red-600 transition p-2"><i class="fas fa-trash"></i></button>
                     </div>
-
-                    <div class="flex flex-col gap-3 pt-3 border-t border-slate-50">
-                        <div>
-                            <label class="text-[9px] font-black text-slate-400 uppercase block mb-1 italic">Assegna Targa Mezzo</label>
-                            <input type="text" value="${r[6] || ''}" onchange="setMezzo('${r[0]}', this.value)" 
-                                   placeholder="Inserisci Targa..." 
-                                   class="w-full text-xs font-black uppercase py-2 px-3 bg-slate-50 rounded-lg border-none shadow-inner focus:bg-white focus:ring-1 focus:ring-red-500 outline-none">
-                        </div>
-                        ${r[5] ? `<div class="flex items-center gap-2"><div class="w-2 h-2 bg-green-500 rounded-full"></div><p class="text-[10px] font-black text-slate-600 uppercase">Istruttore: ${r[5]}</p></div>` : ''}
+                    <div class="pt-3 border-t flex items-center gap-2">
+                        <input id="targa-${r[0]}" type="text" value="${r[6] || ''}" placeholder="Targa mezzo..." 
+                               class="flex-1 text-xs font-black uppercase py-2 px-3 bg-slate-50 rounded-lg border-none shadow-inner outline-none focus:ring-1 focus:ring-red-500">
+                        <button onclick="salvaTarga('${r[0]}')" class="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center hover:bg-green-600 transition shadow-md">
+                            <i class="fas fa-save"></i>
+                        </button>
                     </div>
+                    ${r[5] ? `<p class="text-[10px] font-black text-green-600 uppercase">Istruttore: ${r[5]}</p>` : ''}
                 </div>
             `).reverse().join('');
         }
 
+        async function salvaTarga(id) {
+            const val = document.getElementById('targa-'+id).value.toUpperCase();
+            document.getElementById('sync-icon').classList.add('fa-spin');
+            try {
+                await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val }) });
+                alert("Targa salvata con successo!");
+            } catch(e) { alert("Errore salvataggio."); }
+            document.getElementById('sync-icon').classList.remove('fa-spin');
+        }
+
         function renderStaff() {
             const container = document.getElementById('lista-staff');
-            // Colonna A: Ruolo, Colonna B: Nome, Colonna C: Email
             container.innerHTML = db.anagrafica.filter(a => a[0] !== "RUOLO" && a[0] !== "").map(a => `
                 <tr class="hover:bg-slate-50 transition font-bold">
                     <td class="p-4 uppercase text-[9px] tracking-widest ${a[0] === 'TRAINER' ? 'text-green-600' : 'text-blue-600'}">${a[0]}</td>
-                    <td class="p-4 uppercase text-xs text-slate-800">${a[1]} <br> <span class="text-[9px] text-slate-400 font-normal">${a[2] || ''}</span></td>
-                    <td class="p-4 text-center">
-                        <button onclick="delPersona('${a[1]}')" class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm">
-                            <i class="fas fa-user-minus text-[10px]"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        async function setMezzo(id, val) {
-            try {
-                await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val.toUpperCase() }) });
-            } catch(e) { console.error(e); }
-        }
-
-        async function delGuida(id) {
-            if(!confirm("Cancellare questa guida?")) return;
-            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) });
-            init();
+                    <td class="p-4 uppercase text-xs">${a[1]} <br> <span class="text-[9px] text-slate-400 font-normal">${a[2]}</span></td>
+                    <td class="p-4 text-center"><button onclick="delPersona('${a[1]}')" class="text-red-300 hover:text-red-500 transition"><i class="fas fa-user-minus"></i></button></td>
+                </tr>`).join('');
         }
 
         async function addPersona() {
@@ -185,29 +135,23 @@
             const e = document.getElementById('add-email').value.trim();
             if(!n) return alert("Manca il nome!");
             await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ADD_PERSONA", ruolo: r, nome: n, email: e, cat: "" }) });
-            document.getElementById('add-nome').value = "";
-            init();
+            location.reload();
         }
 
-        async function delPersona(nome) {
-            if(!confirm(`Rimuovere ${nome}?`)) return;
-            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: nome }) });
-            init();
-        }
+        async function delPersona(n) { if(confirm("Rimuovere?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: n }) }); location.reload(); } }
+        async function delGuida(id) { if(confirm("Cancellare?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); location.reload(); } }
 
         function switchTab(tab) {
             document.getElementById('sec-guide').classList.toggle('hidden', tab !== 'guide');
             document.getElementById('sec-staff').classList.toggle('hidden', tab !== 'staff');
             document.getElementById('t-guide').classList.toggle('tab-active', tab === 'guide');
-            document.getElementById('t-guide').classList.toggle('text-slate-400', tab !== 'guide');
             document.getElementById('t-staff').classList.toggle('tab-active', tab === 'staff');
-            document.getElementById('t-staff').classList.toggle('text-slate-400', tab !== 'staff');
         }
 
         function filterStatus(status) {
             currentFilter = status;
-            document.getElementById('f-aperta').className = status === 'APERTA' ? 'px-6 py-2 rounded-xl text-[10px] font-black uppercase transition bg-white shadow-sm' : 'px-6 py-2 rounded-xl text-[10px] font-black uppercase transition text-slate-500';
-            document.getElementById('f-assegnata').className = status === 'ASSEGNATA' ? 'px-6 py-2 rounded-xl text-[10px] font-black uppercase transition bg-white shadow-sm' : 'px-6 py-2 rounded-xl text-[10px] font-black uppercase transition text-slate-500';
+            document.getElementById('f-aperta').classList.toggle('bg-white', status === 'APERTA');
+            document.getElementById('f-assegnata').classList.toggle('bg-white', status === 'ASSEGNATA');
             renderGuide();
         }
 
