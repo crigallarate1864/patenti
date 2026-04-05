@@ -56,49 +56,54 @@
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbw34wKdqEayDmCctsmq1yMmiTPJrdD012i0z3JU-iwOJP_RyfN1RQn7ZHsrdwITFEDO/exec";
+        const API = "https://script.google.com/macros/s/AKfycbwa1nuYn5xFcWpuO-oz4SVYPKmJO9iDQRqK2LrhEHPGtmqcVbHnwnbVL2eCdkCywNKo/exec";
         let db = { anagrafica: [], richieste: [] };
 
         async function load() {
             document.getElementById('loading').classList.remove('hidden');
-            try {
-                const r = await fetch(API);
-                db = await r.json();
-                document.getElementById('all-nome').innerHTML = '<option value="">-- Seleziona Nome --</option>' + 
-                    db.anagrafica.filter(x => x[0] === 'DISCENTE').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
-                updateView();
-            } catch(e) { console.error(e); }
+            const r = await fetch(API);
+            db = await r.json();
+            document.getElementById('all-nome').innerHTML = '<option value="">-- Seleziona Nome --</option>' + 
+                db.anagrafica.filter(x => x[0] === 'DISCENTE').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
             document.getElementById('loading').classList.add('hidden');
+            updateView();
+        }
+
+        function formattazioneEstesa(dataStr) {
+            if(!dataStr) return "";
+            let dataObj;
+            if(dataStr.includes('T')) dataObj = new Date(dataStr.split('T')[0]);
+            else if(dataStr.includes('-')) dataObj = new Date(dataStr);
+            else if(dataStr.includes('/')) {
+                let p = dataStr.split('/');
+                dataObj = new Date(p[2], p[1]-1, p[0]);
+            }
+            const opzioni = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            return dataObj.toLocaleDateString('it-IT', opzioni).toUpperCase();
         }
 
         function updateView() {
             const nome = document.getElementById('all-nome').value;
             if(!nome) return;
             const mie = db.richieste.filter(r => r[3] === nome && (r[4]==='ASSEGNATA' || r[4]==='APERTA'));
-            
             const container = document.getElementById('mie-guide');
-            if(mie.length === 0) {
-                container.innerHTML = '<p class="text-center py-4 text-slate-300 font-bold uppercase text-[10px]">Nessuna richiesta presente</p>';
-            } else {
-                container.innerHTML = mie.map(r => `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
-                        <div class="flex gap-3 items-center">
-                            ${r[4]==='ASSEGNATA' ? 
-                                `<button onclick="scaricaICS('${pulisciData(r[1])}','${r[2]}','Guida CRI: ${r[5]}','Mezzo: ${r[6]||'Vedi portale'}')" class="text-blue-500 bg-blue-50 w-9 h-9 rounded-xl flex items-center justify-center shadow-sm"><i class="fas fa-calendar-plus text-lg"></i></button>` : 
-                                `<div class="text-slate-300 bg-slate-50 w-9 h-9 rounded-xl flex items-center justify-center"><i class="fas fa-clock text-lg"></i></div>`
-                            }
-                            <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase">${pulisciData(r[1])} - ${r[2]}</p>
-                                <p class="font-black uppercase text-xs text-slate-800 tracking-tighter">${r[4]==='ASSEGNATA' ? 'Istruttore: ' + r[5] : 'IN ATTESA DI TRAINER'}</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="px-2 py-1 rounded-full text-[8px] font-black uppercase ${r[4]==='ASSEGNATA' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">${r[4]==='ASSEGNATA' ? 'Confermata' : 'In Attesa'}</span>
-                            <p class="text-[10px] font-black text-red-600 mt-1 uppercase tracking-tighter">${r[6] || ''}</p>
+            
+            container.innerHTML = mie.length === 0 ? '<p class="text-center py-4 text-slate-300 font-bold uppercase text-[10px]">Nessuna richiesta</p>' : 
+                mie.map(r => `
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
+                    <div class="flex gap-3 items-center">
+                        ${r[4]==='ASSEGNATA' ? `<button onclick="scaricaICS('${pulisciData(r[1])}','${r[2]}','Guida con ${r[5]}','Mezzo: ${r[6]||'Vedi portale'}')" class="text-blue-500 bg-blue-50 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"><i class="fas fa-calendar-plus text-xl"></i></button>` : `<div class="text-slate-300 bg-slate-50 w-10 h-10 rounded-xl flex items-center justify-center"><i class="fas fa-clock text-xl"></i></div>`}
+                        <div>
+                            <p class="text-[12px] font-black text-red-600 mb-0.5">${formattazioneEstesa(r[1])} - ORE ${r[2]}</p>
+                            <p class="font-bold uppercase text-[11px] text-slate-800 tracking-tighter">${r[4]==='ASSEGNATA' ? 'ISTRUTTORE: ' + r[5] : 'IN ATTESA DI TRAINER'}</p>
                         </div>
                     </div>
-                `).reverse().join('');
-            }
+                    <div class="text-right">
+                        <span class="px-2 py-1 rounded-full text-[8px] font-black uppercase ${r[4]==='ASSEGNATA'?'bg-green-100 text-green-700':'bg-orange-100 text-orange-700'}">${r[4]==='ASSEGNATA'?'Confermata':'In Attesa'}</span>
+                        <p class="text-[10px] font-black text-slate-400 mt-1 uppercase">${r[6] || ''}</p>
+                    </div>
+                </div>
+            `).reverse().join('');
             
             const p = db.anagrafica.find(x => x[1] === nome);
             const f = db.richieste.filter(r => r[3] === nome && r[4] === 'ASSEGNATA').length;
@@ -117,7 +122,7 @@
             const blob = new Blob([icsMSG], { type: 'text/calendar;charset=utf-8' });
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
-            link.setAttribute('download', 'guida_cri.ics');
+            link.setAttribute('download', 'guida.ics');
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -125,14 +130,11 @@
 
         async function inoltra() {
             const d = { azione: "INOLTRA", allievo: document.getElementById('all-nome').value, giorno: document.getElementById('all-data').value, oraInizio: document.getElementById('all-inizio').value, oraFine: document.getElementById('all-fine').value };
-            if(!d.allievo || !d.giorno || !d.oraInizio) return alert("Inserisci tutti i dati!");
+            if(!d.allievo || !d.giorno || !d.oraInizio) return alert("Mancano dati!");
             document.getElementById('loading').classList.remove('hidden');
-            try {
-                const res = await fetch(API, { method: 'POST', body: JSON.stringify(d) });
-                alert(await res.text());
-                load();
-            } catch(e) { alert("Errore invio"); }
-            document.getElementById('loading').classList.add('hidden');
+            const res = await fetch(API, { method: 'POST', body: JSON.stringify(d) });
+            alert(await res.text());
+            location.reload();
         }
 
         function pulisciData(d) { if(typeof d === 'string' && d.includes('T')) { let p = d.split('T')[0].split('-'); return p[2]+'/'+p[1]+'/'+p[0]; } return d; }
