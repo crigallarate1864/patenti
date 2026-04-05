@@ -64,7 +64,7 @@
                             <h4 class="text-md font-black uppercase text-slate-800 tracking-tighter">${r[3]}</h4>
                             <p class="text-xl font-black text-green-600 leading-none">${r[2]}</p>
                         </div>
-                        <button onclick="accetta('${r[0]}','${r[3]}','${r[1]}','${r[2]}')" class="bg-slate-900 text-white px-5 py-3 rounded-2xl font-black text-[10px] uppercase shadow-md">Accetta</button>
+                        <button onclick="accetta('${r[0]}','${r[3]}','${r[1]}','${r[2]}')" class="bg-slate-900 text-white px-5 py-3 rounded-2xl font-black text-[10px] uppercase italic shadow-md">Accetta</button>
                     </div>
                 `).join('');
             document.getElementById('loading').classList.add('hidden');
@@ -76,11 +76,46 @@
             const miei = db.richieste.filter(r => r[5] === nome && r[4] === 'ASSEGNATA');
             document.getElementById('miei-impegni').innerHTML = miei.map(r => `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-slate-900 flex justify-between items-center text-[11px] font-bold">
-                    <p class="uppercase text-slate-400">${pulisciData(r[1])} - ${r[2]}</p>
-                    <p class="uppercase text-slate-800 font-black">${r[3]}</p>
+                    <div class="flex gap-3 items-center">
+                         <button onclick="scaricaICS('${pulisciData(r[1])}','${r[2]}','Guida con ${r[3]}','Mezzo: ${r[6]||'Controlla portale'}')" class="text-slate-500 bg-slate-50 w-8 h-8 rounded-lg flex items-center justify-center"><i class="fas fa-calendar-plus"></i></button>
+                         <div>
+                            <p class="uppercase text-slate-400">${pulisciData(r[1])} - ${r[2]}</p>
+                            <p class="uppercase text-slate-800 font-black">${r[3]}</p>
+                         </div>
+                    </div>
                     <p class="text-red-600 font-black">${r[6] || '---'}</p>
                 </div>
             `).reverse().join('');
+        }
+
+        function scaricaICS(dataStr, oraStr, titolo, desc) {
+            const [g, m, a] = dataStr.split('/');
+            const [ore, min] = oraStr.split(':');
+            const inizio = new Date(a, m - 1, g, ore, min);
+            const fine = new Date(inizio.getTime() + 75 * 60000); 
+
+            const formatICS = (d) => d.toISOString().replace(/-|:|\.\d+/g, '');
+
+            const icsMSG = [
+                "BEGIN:VCALENDAR",
+                "VERSION:2.0",
+                "BEGIN:VEVENT",
+                "DTSTART:" + formatICS(inizio),
+                "DTEND:" + formatICS(fine),
+                "SUMMARY:" + titolo,
+                "DESCRIPTION:" + desc,
+                "LOCATION:CRI Gallarate",
+                "END:VEVENT",
+                "END:VCALENDAR"
+            ].join("\n");
+
+            const blob = new Blob([icsMSG], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.setAttribute('download', 'impegno_guida.ics');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         async function accetta(id, allievo, data, ora) {
