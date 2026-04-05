@@ -21,6 +21,8 @@
     </header>
 
     <main class="p-4 max-w-xl mx-auto space-y-6">
+        <div id="error-box" class="hidden p-4 bg-red-600 text-white rounded-xl text-xs font-bold"></div>
+        
         <select id="ist-nome" onchange="updateView()" class="w-full p-4 bg-white rounded-2xl shadow-md font-black border-none outline-none"></select>
         
         <div id="lista-proposte" class="space-y-4"></div>
@@ -38,16 +40,23 @@
             try {
                 const r = await fetch(API);
                 db = await r.json();
+                if(!db.anagrafica) throw new Error("Dati corrotti");
+                
                 document.getElementById('ist-nome').innerHTML = '<option value="">-- Chi sei? --</option>' + 
-                    db.anagrafica.filter(x => x[0].toUpperCase() === 'TRAINER').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
+                    db.anagrafica.filter(x => x[0] && x[0].toUpperCase() === 'TRAINER').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
+                
                 renderProposte();
                 updateView();
-            } catch(e) { console.error(e); }
-            document.getElementById('loading').classList.add('hidden');
+            } catch(e) {
+                document.getElementById('error-box').innerText = "ERRORE: " + e.message;
+                document.getElementById('error-box').classList.remove('hidden');
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
         }
 
-        function formatData(s) {
-            if(!s) return "";
+        function fixData(s) {
+            if(!s || s === "Data") return "";
             let p = s.split('T')[0].split(/[-/]/); 
             let y, m, d;
             if (p[0].length === 4) { y = p[0]; m = p[1]; d = p[2]; } else { d = p[0]; m = p[1]; y = p[2]; }
@@ -57,6 +66,7 @@
 
         function renderProposte() {
             const container = document.getElementById('lista-proposte');
+            if(!db.richieste) return;
             const aperte = db.richieste.filter(r => r[4] === 'APERTA');
             const grouped = aperte.reduce((acc, r) => { (acc[r[3]] = acc[r[3]] || []).push(r); return acc; }, {});
 
@@ -69,21 +79,21 @@
                     <div id="acc-${i}" class="accordion-content bg-slate-50/30 p-5 space-y-4">`;
                 grouped[allievo].forEach(r => {
                     h += `<div class="flex justify-between items-center border-b pb-2 border-slate-200">
-                        <p class="text-[10px] font-bold uppercase text-red-600">${formatData(r[1])}<br><span class="text-slate-800">ORE ${r[2]}</span></p>
+                        <p class="text-[10px] font-bold uppercase text-red-600">${fixData(r[1])}<br><span class="text-slate-800">ORE ${r[2]}</span></p>
                         <button onclick="accetta('${r[0]}','${allievo}','${r[1]}','${r[2]}')" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase">Accetta</button>
                     </div>`;
                 });
                 h += `</div></div>`;
             });
-            container.innerHTML = h || '<p class="text-center py-10 text-slate-300 font-bold uppercase text-xs">Nessuna proposta</p>';
+            container.innerHTML = h || '<p class="text-center py-10 text-slate-300 font-black uppercase text-xs">Nessuna proposta</p>';
         }
 
         function updateView() {
-            const n = document.getElementById('ist-nome').value; if(!n) return;
+            const n = document.getElementById('ist-nome').value; if(!n || !db.richieste) return;
             const miei = db.richieste.filter(r => r[5] === n && r[4] === 'ASSEGNATA');
             document.getElementById('miei-impegni').innerHTML = miei.map(r => `
                 <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-slate-900 flex justify-between items-center">
-                    <p class="text-[10px] font-bold uppercase">${formatData(r[1])} - ${r[2]}<br>${r[3]}</p>
+                    <p class="text-[10px] font-bold uppercase">${fixData(r[1])} - ${r[2]}<br>${r[3]}</p>
                     <p class="text-red-600 font-black text-xs">${r[6] || '---'}</p>
                 </div>`).reverse().join('');
         }
