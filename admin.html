@@ -49,10 +49,10 @@
                 <h3 class="font-black uppercase mb-4 text-slate-800 tracking-tighter italic">Nuovo Membro</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                     <select id="new-ruolo" class="p-3 bg-slate-50 rounded-xl border border-slate-100 font-bold outline-none"><option value="TRAINER">TRAINER</option><option value="DISCENTE">DISCENTE</option><option value="RESPONSABILE">RESPONSABILE</option></select>
-                    <input id="new-nome" type="text" placeholder="COGNOME NOME" class="p-3 bg-slate-50 rounded-xl border border-slate-100 uppercase font-bold outline-none">
-                    <input id="new-email" type="email" placeholder="email@cri.it" class="p-3 bg-slate-50 rounded-xl border border-slate-100 font-bold outline-none">
-                    <select id="new-cat" class="p-3 bg-slate-50 rounded-xl border border-slate-100 font-bold outline-none"><option value="">CAT (Pat 4/5)</option><option value="4">PAT 4</option><option value="5">PAT 5</option></select>
-                    <button onclick="addPersona()" class="cri-red text-white p-3 rounded-xl font-black shadow-lg uppercase tracking-widest active:scale-95 transition">Aggiungi</button>
+                    <input id="new-nome" type="text" placeholder="COGNOME NOME" class="p-3 bg-slate-50 rounded-xl border border-slate-100 uppercase font-bold outline-none shadow-inner">
+                    <input id="new-email" type="email" placeholder="email@cri.it" class="p-3 bg-slate-50 rounded-xl border border-slate-100 font-bold outline-none shadow-inner">
+                    <select id="new-cat" class="p-3 bg-slate-50 rounded-xl border border-slate-100 font-bold outline-none shadow-inner"><option value="">CAT (Pat 4/5)</option><option value="4">PAT 4</option><option value="5">PAT 5</option></select>
+                    <button onclick="addPersona()" class="cri-red text-white p-3 rounded-xl font-black shadow-lg shadow-red-100 uppercase tracking-widest active:scale-95 transition">Aggiungi</button>
                 </div>
             </div>
             <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 text-slate-700"><table class="w-full text-left text-xs font-bold"><thead class="bg-slate-50 uppercase text-slate-400 border-b"><tr><th class="p-4">Ruolo</th><th class="p-4">Cognome Nome</th><th class="p-4">Email / Dettagli</th><th class="p-4 text-center">Azioni</th></tr></thead><tbody id="anag-table" class="divide-y divide-slate-100"></tbody></table></div>
@@ -61,14 +61,32 @@
 
     <script>
         const API = "https://script.google.com/macros/s/AKfycbybqU7YZeCfA7m5N0gdsjP32qdm2oAHDOGaxQgKCuE1GZKgME00pAmtJLnAyGQgWEbs/exec";
-        async function load() { try { const r = await fetch(API); const db = await r.json(); document.getElementById('admin-table').innerHTML = db.richieste.map(r => `<tr class="hover:bg-slate-50 border-b"><td class="p-4"><span class="text-red-600 font-black">${formattazioneEstesa(r[1])}</span><br>ORE ${r[2]}</td><td class="p-4 uppercase text-slate-900 font-black">${r[3]}</td><td class="p-4 uppercase ${r[5] ? 'text-green-600 font-black' : 'text-slate-300'}">${r[5] || 'In attesa'}</td><td class="p-4"><input id="m-${r[0]}" value="${r[6] || ''}" onchange="setMezzo('${r[0]}')" placeholder="..." class="w-full border-b-2 border-slate-100 p-1 uppercase font-black outline-none bg-transparent"></td><td class="p-4 text-center"><button onclick="delGuida('${r[0]}')" class="text-red-300 hover:text-red-600 transition"><i class="fas fa-trash-alt text-lg"></i></button></td></tr>`).reverse().join(''); document.getElementById('anag-table').innerHTML = db.anagrafica.map(a => `<tr class="hover:bg-slate-50 border-b"><td class="p-4 font-black ${a[0]==='TRAINER'?'text-green-600':(a[0]==='RESPONSABILE'?'text-red-600':'text-blue-600')}">${a[0]}</td><td class="p-4 uppercase text-slate-900 font-black">${a[1]}</td><td class="p-4 text-slate-500 font-medium">${a[2]} ${a[3] ? ' - CAT ' + a[3] : ''}</td><td class="p-4 text-center"><button onclick="delPersona('${a[1]}')" class="text-red-500 bg-red-50 w-9 h-9 rounded-xl shadow-sm active:scale-90 transition"><i class="fas fa-user-minus"></i></button></td></tr>`).join(''); } catch(e) {} }
-        function formattazioneEstesa(dStr) { if(!dStr) return ""; let d; if(dStr.includes('T')) d = new Date(dStr.split('T')[0]); else if(dStr.includes('-')) d = new Date(dStr); else if(dStr.includes('/')) { let p = dStr.split('/'); d = new Date(p[2], p[1]-1, p[0]); } return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'numeric', year: 'numeric' }); }
-        async function addPersona() { const d = { azione: "ADD_PERSONA", ruolo: document.getElementById('new-ruolo').value, nome: document.getElementById('new-nome').value.toUpperCase(), email: document.getElementById('new-email').value, cat: document.getElementById('new-cat').value }; if(!d.nome || !d.email) return alert("Dati mancanti!"); await fetch(API, { method: 'POST', body: JSON.stringify(d) }); load(); }
+
+        async function load() {
+            const r = await fetch(API); const db = await r.json();
+            document.getElementById('admin-table').innerHTML = db.richieste.map(r => `
+                <tr class="hover:bg-slate-50 border-b">
+                    <td class="p-4"><span class="text-red-600 font-black">${formattazioneEstesa(r[1])}</span><br>ORE ${r[2]}</td>
+                    <td class="p-4 uppercase text-slate-900 font-black">${r[3]}</td>
+                    <td class="p-4 uppercase ${r[5] ? 'text-green-600 font-black' : 'text-slate-300'}">${r[5] || 'In attesa'}</td>
+                    <td class="p-4"><input id="m-${r[0]}" value="${r[6] || ''}" onchange="setMezzo('${r[0]}')" placeholder="..." class="w-full border-b-2 border-slate-100 p-1 uppercase font-black outline-none bg-transparent"></td>
+                    <td class="p-4 text-center"><button onclick="delGuida('${r[0]}')" class="text-red-300 hover:text-red-600"><i class="fas fa-trash-alt text-lg"></i></button></td>
+                </tr>`).reverse().join('');
+            document.getElementById('anag-table').innerHTML = db.anagrafica.map(a => `<tr class="hover:bg-slate-50 border-b"><td class="p-4 font-black ${a[0]==='TRAINER'?'text-green-600':(a[0]==='RESPONSABILE'?'text-red-600':'text-blue-600')}">${a[0]}</td><td class="p-4 uppercase text-slate-900 font-black">${a[1]}</td><td class="p-4 text-slate-500 font-medium">${a[2]} ${a[3] ? ' - CAT ' + a[3] : ''}</td><td class="p-4 text-center"><button onclick="delPersona('${a[1]}')" class="text-red-500 bg-red-50 w-9 h-9 rounded-xl shadow-sm active:scale-90 transition"><i class="fas fa-user-minus"></i></button></td></tr>`).join('');
+        }
+
+        function formattazioneEstesa(dStr) {
+            if(!dStr) return "";
+            let parti = dStr.split(/[-T/]/); let y, m, d;
+            if (parti[0].length === 4) { y = parti[0]; m = parti[1]; d = parti[2]; } else { d = parti[0]; m = parti[1]; y = parti[2]; }
+            return d + "/" + m + "/" + y;
+        }
+
+        async function addPersona() { const d = { azione: "ADD_PERSONA", ruolo: document.getElementById('new-ruolo').value, nome: document.getElementById('new-nome').value.toUpperCase(), email: document.getElementById('new-email').value, cat: document.getElementById('new-cat').value }; await fetch(API, { method: 'POST', body: JSON.stringify(d) }); load(); }
         async function delPersona(n) { if(!confirm(`Eliminare ${n}?`)) return; await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: n }) }); load(); }
         async function delGuida(id) { if(!confirm(`Annullare?`)) return; await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); load(); }
         async function setMezzo(id) { const v = document.getElementById('m-'+id).value; await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: v.toUpperCase() }) }); }
         function tab(t) { document.getElementById('sec-guide').classList.add('hidden'); document.getElementById('sec-anagrafica').classList.add('hidden'); document.getElementById('t-guide').classList.remove('tab-active'); document.getElementById('t-anagrafica').classList.remove('tab-active'); document.getElementById('sec-' + t).classList.remove('hidden'); document.getElementById('t-' + t).classList.add('tab-active'); }
-        function pulisciData(d) { if(typeof d === 'string' && d.includes('T')) { let p = d.split('T')[0].split('-'); return p[2]+'/'+p[1]+'/'+p[0]; } return d; }
         window.onload = load;
     </script>
 </body>
