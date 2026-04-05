@@ -2,59 +2,223 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRI Gallarate - Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CRI Gallarate - Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .cri-red { background-color: #ed1c24; }
+        .hidden { display: none; }
+        .tab-active { border-bottom: 4px solid #ed1c24; color: #ed1c24; }
+        .card { background: white; border-radius: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        input, select { border: 1px solid #e2e8f0; padding: 0.75rem; border-radius: 0.75rem; outline: none; transition: all 0.2s; }
+        input:focus, select:focus { border-color: #ed1c24; ring: 2px solid #fee2e2; }
+    </style>
 </head>
-<body class="bg-slate-50 p-2 md:p-6 font-['Outfit']">
+<body class="pb-10">
 
-    <header class="max-w-5xl mx-auto mb-6 flex justify-between items-center bg-white p-5 rounded-3xl shadow-lg border-b-2 border-red-600">
-        <div class="flex items-center gap-3"><img src="logo.png" alt="CRI" class="h-10"><h1 class="text-xl font-black uppercase text-slate-800">Admin <span class="text-red-600">Patenti</span></h1></div>
-        <button onclick="location.reload()" class="bg-slate-100 p-3 rounded-full text-slate-500"><i class="fas fa-sync-alt"></i></button>
+    <header class="bg-white sticky top-0 z-50 border-b border-slate-200 px-4 py-3 shadow-sm">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img src="logo.png" alt="CRI" class="w-14 h-auto" onerror="this.style.display='none'">
+                <div>
+                    <h1 class="text-xl font-black uppercase leading-none">Pannello <span class="text-red-600">Admin</span></h1>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">CRI Gallarate</p>
+                </div>
+            </div>
+            <button onclick="init()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-red-50 hover:text-red-600 transition">
+                <i id="sync-icon" class="fas fa-sync-alt"></i>
+            </button>
+        </div>
     </header>
 
-    <main class="max-w-5xl mx-auto space-y-6">
-        <div id="error-box" class="hidden p-4 bg-red-600 text-white rounded-xl text-xs font-bold"></div>
-        <section class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-[11px] font-bold">
-                    <thead class="bg-slate-900 text-slate-400 uppercase tracking-widest">
-                        <tr><th class="p-4">Data/Ora</th><th class="p-4">Discente</th><th class="p-4">Trainer</th><th class="p-4">Mezzo</th><th class="p-4">Azioni</th></tr>
+    <nav class="bg-white border-b border-slate-200 px-4 mb-6">
+        <div class="max-w-4xl mx-auto flex gap-6">
+            <button onclick="switchTab('guide')" id="btn-guide" class="py-4 font-black uppercase text-xs tracking-widest tab-active">Gestione Guide</button>
+            <button onclick="switchTab('staff')" id="btn-staff" class="py-4 font-black uppercase text-xs tracking-widest text-slate-400">Anagrafica Personale</button>
+        </div>
+    </nav>
+
+    <main class="p-4 max-w-4xl mx-auto">
+        
+        <div id="section-guide" class="space-y-6">
+            
+            <div class="flex gap-2 p-1 bg-slate-200 rounded-xl w-fit">
+                <button onclick="filterStatus('APERTA')" id="f-attesa" class="px-4 py-2 rounded-lg text-[10px] font-black uppercase transition bg-white shadow-sm">In Attesa</button>
+                <button onclick="filterStatus('ASSEGNATA')" id="f-confermate" class="px-4 py-2 rounded-lg text-[10px] font-black uppercase transition text-slate-500">Confermate</button>
+            </div>
+
+            <div id="lista-guide" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                </div>
+        </div>
+
+        <div id="section-staff" class="hidden space-y-6">
+            
+            <div class="card p-6 border-l-8 border-red-600">
+                <h3 class="font-black uppercase text-sm mb-4">Aggiungi Nuovo Nominativo</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <select id="add-ruolo">
+                        <option value="DISCENTE">DISCENTE</option>
+                        <option value="TRAINER">TRAINER</option>
+                        <option value="RESPONSABILE">RESPONSABILE</option>
+                    </select>
+                    <input type="text" id="add-nome" placeholder="COGNOME NOME" class="uppercase">
+                    <input type="email" id="add-email" placeholder="email@esempio.it">
+                    <button onclick="addPersona()" class="cri-red text-white font-black py-3 rounded-xl uppercase text-xs shadow-lg shadow-red-200 active:scale-95 transition">Aggiungi</button>
+                </div>
+            </div>
+
+            <div class="card overflow-hidden">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 border-b border-slate-100 font-black uppercase text-slate-400">
+                        <tr>
+                            <th class="p-4">Ruolo</th>
+                            <th class="p-4">Nome</th>
+                            <th class="p-4">Azioni</th>
+                        </tr>
                     </thead>
-                    <tbody id="admin-table" class="divide-y divide-slate-100"></tbody>
+                    <tbody id="lista-staff" class="divide-y divide-slate-50">
+                        </tbody>
                 </table>
             </div>
-        </section>
+        </div>
+
     </main>
 
     <script>
         const API = "https://script.google.com/macros/s/AKfycbxwlkLd-AIKFVbmjnqxsVsqSPXlWGxNjeBhQVr0gzITIHM0uT_4gHEUSVh5e54MkTR4/exec";
+        let db = { anagrafica: [], richieste: [] };
+        let currentFilter = 'APERTA';
 
-        async function load() {
+        async function init() {
+            document.getElementById('sync-icon').classList.add('fa-spin text-red-600');
             try {
-                const r = await fetch(API);
-                const db = await r.json();
-                if(!db.richieste) throw new Error("Dati mancanti");
-                
-                document.getElementById('admin-table').innerHTML = db.richieste.filter(r => r[0] !== "ID").map(r => `
-                    <tr class="hover:bg-slate-50 border-b">
-                        <td class="p-4"><span class="text-red-600 font-black">${r[1]}</span><br>ORE ${r[2]}</td>
-                        <td class="p-4 uppercase font-black">${r[3]}</td>
-                        <td class="p-4 uppercase ${r[5] ? 'text-green-600' : 'text-slate-300'}">${r[5] || 'In attesa'}</td>
-                        <td class="p-4"><input value="${r[6] || ''}" onchange="setMezzo('${r[0]}', this.value)" placeholder="..." class="w-full border-b-2 p-1 uppercase font-black outline-none bg-transparent"></td>
-                        <td class="p-4"><button onclick="del('${r[0]}')" class="text-red-300 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
-                    </tr>`).reverse().join('');
-            } catch(e) {
-                document.getElementById('error-box').innerText = "ERRORE: " + e.message;
-                document.getElementById('error-box').classList.remove('hidden');
-            }
+                const response = await fetch(API);
+                db = await response.json();
+                renderGuide();
+                renderStaff();
+            } catch (e) { alert("Errore caricamento dati"); }
+            document.getElementById('sync-icon').classList.remove('fa-spin text-red-600');
         }
 
-        async function del(id) { if(confirm("Annullare?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); location.reload(); } }
-        async function setMezzo(id, val) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val.toUpperCase() }) }); }
-        window.onload = load;
+        // --- GESTIONE DATE ---
+        function formatDataEstesa(s) {
+            if(!s || s === "Data") return "Data non valida";
+            let p = s.split('T')[0].split(/[-/]/); 
+            let y, m, d;
+            if (p[0].length === 4) { y = p[0]; m = p[1]; d = p[2]; } else { d = p[0]; m = p[1]; y = p[2]; }
+            const dateObj = new Date(y, m - 1, d, 12, 0);
+            return dateObj.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'long' }).toUpperCase();
+        }
+
+        // --- RENDER GUIDE ---
+        function renderGuide() {
+            const container = document.getElementById('lista-guide');
+            const filtered = db.richieste.filter(r => r[4] === currentFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-center py-10 text-slate-400 font-bold uppercase text-[10px]">Nessuna richiesta in questa categoria</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(r => `
+                <div class="card p-5 space-y-3 relative overflow-hidden group">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[10px] font-black text-red-600 uppercase mb-1">${formatDataEstesa(r[1])}</p>
+                            <h4 class="font-black text-slate-800 uppercase tracking-tighter text-lg leading-none">${r[3]}</h4>
+                            <p class="text-xs font-bold text-slate-500 mt-1"><i class="far fa-clock mr-1"></i> ${r[2]}</p>
+                        </div>
+                        <button onclick="delGuida('${r[0]}')" class="text-slate-300 hover:text-red-600 transition p-2">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-50 flex items-center justify-between gap-4">
+                        <div class="flex-1">
+                            <p class="text-[9px] font-black text-slate-400 uppercase mb-1 italic">Assegna Targa Mezzo</p>
+                            <input type="text" value="${r[6] || ''}" onchange="setMezzo('${r[0]}', this.value)" 
+                                   placeholder="Es. CRI 123A" 
+                                   class="w-full text-[10px] font-black uppercase py-2 px-3 bg-slate-50 border-none shadow-inner">
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[9px] font-black text-slate-400 uppercase mb-1 italic">Istruttore</p>
+                            <p class="text-[10px] font-black ${r[5] ? 'text-green-600' : 'text-slate-300'} uppercase">
+                                ${r[5] || 'Non assegnato'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `).reverse().join('');
+        }
+
+        // --- RENDER STAFF ---
+        function renderStaff() {
+            const container = document.getElementById('lista-staff');
+            container.innerHTML = db.anagrafica.filter(a => a[0] !== "RUOLO").map(a => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-4 font-black text-[10px] uppercase ${a[0] === 'TRAINER' ? 'text-green-600' : 'text-blue-600'}">${a[0]}</td>
+                    <td class="p-4 font-bold text-xs uppercase">${a[1]}</td>
+                    <td class="p-4">
+                        <button onclick="delPersona('${a[1]}')" class="text-red-300 hover:text-red-600 transition">
+                            <i class="fas fa-user-minus"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- AZIONI ---
+        async function setMezzo(id, val) {
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val.toUpperCase() }) });
+        }
+
+        async function delGuida(id) {
+            if(!confirm("Eliminare definitivamente questa richiesta?")) return;
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) });
+            init();
+        }
+
+        async function addPersona() {
+            const r = document.getElementById('add-ruolo').value;
+            const n = document.getElementById('add-nome').value.trim().toUpperCase();
+            const e = document.getElementById('add-email').value.trim();
+            if(!n) return alert("Inserisci il nome!");
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ADD_PERSONA", ruolo: r, nome: n, email: e, cat: "" }) });
+            document.getElementById('add-nome').value = "";
+            init();
+        }
+
+        async function delPersona(nome) {
+            if(!confirm(`Rimuovere ${nome} dall'anagrafica?`)) return;
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: nome }) });
+            init();
+        }
+
+        // --- LOGICA TABS E FILTRI ---
+        function switchTab(tab) {
+            document.getElementById('section-guide').classList.toggle('hidden', tab !== 'guide');
+            document.getElementById('section-staff').classList.toggle('hidden', tab !== 'staff');
+            document.getElementById('btn-guide').classList.toggle('tab-active', tab === 'guide');
+            document.getElementById('btn-guide').classList.toggle('text-slate-400', tab !== 'guide');
+            document.getElementById('btn-staff').classList.toggle('tab-active', tab === 'staff');
+            document.getElementById('btn-staff').classList.toggle('text-slate-400', tab !== 'staff');
+        }
+
+        function filterStatus(status) {
+            currentFilter = status;
+            document.getElementById('f-attesa').classList.toggle('bg-white', status === 'APERTA');
+            document.getElementById('f-attesa').classList.toggle('shadow-sm', status === 'APERTA');
+            document.getElementById('f-attesa').classList.toggle('text-slate-500', status !== 'APERTA');
+            document.getElementById('f-confermate').classList.toggle('bg-white', status === 'ASSEGNATA');
+            document.getElementById('f-confermate').classList.toggle('shadow-sm', status === 'ASSEGNATA');
+            document.getElementById('f-confermate').classList.toggle('text-slate-500', status !== 'ASSEGNATA');
+            renderGuide();
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
