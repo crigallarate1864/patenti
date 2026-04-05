@@ -11,7 +11,7 @@
 <body class="bg-slate-50 p-2 md:p-6 font-['Outfit']">
 
     <header class="max-w-5xl mx-auto mb-6 flex justify-between items-center bg-white p-5 rounded-3xl shadow-lg border-b-2 border-red-600">
-        <div class="flex items-center gap-3"><img src="logo.png" alt="CRI" class="h-10"><h1 class="text-xl font-black uppercase">Admin <span class="text-red-600">Patenti</span></h1></div>
+        <div class="flex items-center gap-3"><img src="logo.png" alt="CRI" class="h-10"><h1 class="text-xl font-black uppercase text-slate-800">Admin <span class="text-red-600">Patenti</span></h1></div>
         <button onclick="location.reload()" class="bg-slate-100 p-3 rounded-full text-slate-500"><i class="fas fa-sync-alt"></i></button>
     </header>
 
@@ -29,18 +29,21 @@
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbz1d4pHO2lvq-Us-zxTn9XGmknOnEfrhQubyPsXhyKzDOfp7juaN9i0atiKPCaWvDcz/exec";
+        const API = "https://script.google.com/macros/s/AKfycbzisixq5H1LEQnvl77PV5QIBbmPSDRNEWLS4ZM2AiD7j6L5wRnZXSeac9oyAcTARjbD/exec";
 
         async function load() {
-            const r = await fetch(API); const db = await r.json();
-            document.getElementById('admin-table').innerHTML = db.richieste.map(r => `
-                <tr class="hover:bg-slate-50 border-b">
-                    <td class="p-4"><span class="text-red-600 font-black">${r[1]}</span><br>ORE ${r[2]}</td>
-                    <td class="p-4 uppercase font-black">${r[3]}</td>
-                    <td class="p-4 uppercase ${r[5] ? 'text-green-600' : 'text-slate-300'}">${r[5] || 'In attesa'}</td>
-                    <td class="p-4"><input value="${r[6] || ''}" onchange="setMezzo('${r[0]}', this.value)" placeholder="..." class="w-full border-b-2 p-1 uppercase outline-none bg-transparent"></td>
-                    <td class="p-4"><button onclick="del('${r[0]}')" class="text-red-300 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
-                </tr>`).reverse().join('');
+            try {
+                const r = await fetch(API);
+                const db = await r.json();
+                document.getElementById('admin-table').innerHTML = db.richieste.map(r => `
+                    <tr class="hover:bg-slate-50 border-b">
+                        <td class="p-4"><span class="text-red-600 font-black">${r[1]}</span><br>ORE ${r[2]}</td>
+                        <td class="p-4 uppercase font-black">${r[3]}</td>
+                        <td class="p-4 uppercase ${r[5] ? 'text-green-600' : 'text-slate-300'}">${r[5] || 'In attesa'}</td>
+                        <td class="p-4"><input value="${r[6] || ''}" onchange="setMezzo('${r[0]}', this.value)" placeholder="..." class="w-full border-b-2 p-1 uppercase font-black outline-none bg-transparent"></td>
+                        <td class="p-4"><button onclick="del('${r[0]}')" class="text-red-300 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
+                    </tr>`).reverse().join('');
+            } catch(e) { alert("Errore connessione."); }
         }
 
         async function del(id) { if(confirm("Annullare?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); location.reload(); } }
