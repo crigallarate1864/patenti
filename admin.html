@@ -14,18 +14,19 @@
 </head>
 <body class="p-4">
 
-    <header class="max-w-4xl mx-auto mb-8 flex justify-between items-center bg-white p-6 rounded-3xl shadow-lg border-b-4 border-red-600">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 cri-red rounded-xl flex items-center justify-center text-white text-xl shadow-lg"><i class="fas fa-user-shield"></i></div>
-            <div>
-                <h1 class="text-2xl font-black uppercase text-slate-800">Supervisione <span class="text-red-600">Patenti</span></h1>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest italic">Pannello Responsabile</p>
+    <header class="max-w-5xl mx-auto mb-8 flex justify-between items-center bg-white p-5 rounded-3xl shadow-lg border-b-4 border-red-600">
+        <div class="flex items-center gap-3">
+            <img src="logo.png" alt="CRI" onerror="this.style.display='none'; document.getElementById('fb-logo-a').classList.remove('hidden')" class="h-10 w-auto">
+            <div id="fb-logo-a" class="hidden w-10 h-10 cri-red rounded-lg flex items-center justify-center text-white font-black text-xs">CRI</div>
+            <div class="leading-none">
+                <h1 class="text-xl font-black uppercase text-slate-800">Supervisione <span class="text-red-600">Patenti</span></h1>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic leading-none mt-1">CRI Gallarate</p>
             </div>
         </div>
-        <button onclick="location.reload()" class="bg-slate-100 p-3 rounded-full text-slate-500 hover:bg-red-50 hover:text-red-600 transition"><i class="fas fa-sync-alt"></i></button>
+        <button onclick="location.reload()" class="bg-slate-100 p-3 rounded-full text-slate-500 hover:text-red-600 transition shadow-sm"><i class="fas fa-sync-alt"></i></button>
     </header>
 
-    <main class="max-w-4xl mx-auto bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100">
+    <main class="max-w-5xl mx-auto bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs font-bold">
                 <thead class="bg-slate-900 text-slate-400 uppercase tracking-widest">
@@ -33,7 +34,7 @@
                         <th class="p-4">Data/Ora</th>
                         <th class="p-4">Discente</th>
                         <th class="p-4">Trainer</th>
-                        <th class="p-4">Targa Mezzo</th>
+                        <th class="p-4">Mezzo Assegnato</th>
                     </tr>
                 </thead>
                 <tbody id="admin-table" class="divide-y divide-slate-100"></tbody>
@@ -49,14 +50,14 @@
             const db = await r.json();
             
             document.getElementById('admin-table').innerHTML = db.richieste.map(r => `
-                <tr class="hover:bg-slate-50 transition">
-                    <td class="p-4">${pulisciData(r[1])}<br><span class="text-red-600">${r[2]}</span></td>
-                    <td class="p-4 uppercase text-slate-800">${r[3]}</td>
-                    <td class="p-4 uppercase ${r[5] ? 'text-green-600' : 'text-slate-300'}">${r[5] || 'In attesa'}</td>
+                <tr class="hover:bg-slate-50 transition border-b">
+                    <td class="p-4 text-slate-800">${pulisciData(r[1])}<br><span class="text-red-600 font-black">${r[2]}</span></td>
+                    <td class="p-4 uppercase text-slate-900 font-black">${r[3]}</td>
+                    <td class="p-4 uppercase ${r[5] ? 'text-green-600 font-black' : 'text-slate-300'}">${r[5] || 'In attesa'}</td>
                     <td class="p-4">
                         <input id="m-${r[0]}" value="${r[6] || ''}" onchange="setMezzo('${r[0]}')" 
-                               placeholder="Targa..." 
-                               class="w-full border-2 border-slate-100 p-2 rounded-lg uppercase font-black outline-none focus:border-red-500 transition">
+                               placeholder="Inserisci Targa..." 
+                               class="w-full border-2 border-slate-100 p-2 rounded-xl uppercase font-black outline-none focus:border-red-500 transition shadow-inner bg-slate-50">
                     </td>
                 </tr>
             `).reverse().join('');
@@ -65,7 +66,7 @@
         async function setMezzo(id) {
             const val = document.getElementById('m-'+id).value;
             const res = await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val.toUpperCase() }) });
-            console.log(await res.text());
+            console.log("Stato salvataggio mezzo: " + await res.text());
         }
 
         function pulisciData(d) { if(typeof d === 'string' && d.includes('T')) { let p = d.split('T')[0].split('-'); return p[2]+'/'+p[1]+'/'+p[0]; } return d; }
