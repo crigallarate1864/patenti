@@ -31,12 +31,12 @@
     <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 px-4 py-3 shadow-sm">
         <div class="max-w-xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 cri-red rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
-                    <img src="logo.png" alt="CRI" class="w-7 h-auto" onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='block'">
-                    <i id="fallback-icon" class="fas fa-ambulance text-white hidden"></i>
+                <div class="w-16 h-16 flex items-center justify-center">
+                    <img src="logo.png" alt="CRI" class="w-14 h-auto" onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='block'">
+                    <i id="fallback-icon" class="fas fa-ambulance text-green-600 hidden text-4xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-black tracking-tight uppercase leading-none">Area <span class="text-green-600">Trainer</span></h1>
+                    <h1 class="text-xl font-black uppercase leading-none">Area <span class="text-green-600">Trainer</span></h1>
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">CRI Gallarate</p>
                 </div>
             </div>
@@ -185,9 +185,6 @@
         function toggleAccordion(id) {
             const content = document.getElementById(id);
             const icon = document.getElementById('icon-' + id);
-            const isOpen = content.classList.contains('open');
-            
-            // Chiudi altri? (Opzionale, qui lasciamo libero)
             content.classList.toggle('open');
             icon.classList.toggle('open');
         }
