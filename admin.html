@@ -7,86 +7,44 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #f1f5f9; }
-        .cri-red { background-color: #ed1c24; }
-        .tab-active { border-bottom: 4px solid #ed1c24; color: #ed1c24; }
-    </style>
 </head>
-<body class="p-2 md:p-6">
+<body class="bg-slate-50 p-2 md:p-6 font-['Outfit']">
 
-    <header class="max-w-5xl mx-auto mb-6 flex justify-between items-center bg-white p-5 rounded-3xl shadow-lg border-b-2 border-slate-100">
-        <div class="flex items-center gap-3">
-            <img src="logo.png" alt="CRI" onerror="this.style.display='none'; document.getElementById('fb-logo-a').classList.remove('hidden')" class="h-10 w-auto">
-            <div id="fb-logo-a" class="hidden w-10 h-10 cri-red rounded-lg flex items-center justify-center text-white font-black text-xs">CRI</div>
-            <div class="leading-none">
-                <h1 class="text-xl font-black uppercase text-slate-800">Admin <span class="text-red-600">Patenti</span></h1>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic leading-none mt-1">CRI Gallarate</p>
-            </div>
-        </div>
-        <button onclick="load()" class="bg-slate-100 p-3 rounded-full text-slate-500 hover:text-red-600 transition shadow-sm"><i class="fas fa-sync-alt text-lg"></i></button>
+    <header class="max-w-5xl mx-auto mb-6 flex justify-between items-center bg-white p-5 rounded-3xl shadow-lg border-b-2 border-red-600">
+        <div class="flex items-center gap-3"><img src="logo.png" alt="CRI" class="h-10"><h1 class="text-xl font-black uppercase">Admin <span class="text-red-600">Patenti</span></h1></div>
+        <button onclick="location.reload()" class="bg-slate-100 p-3 rounded-full text-slate-500"><i class="fas fa-sync-alt"></i></button>
     </header>
 
-    <div class="max-w-5xl mx-auto mb-6 flex bg-white rounded-2xl shadow-md overflow-hidden font-bold uppercase text-xs">
-        <button onclick="tab('guide')" id="t-guide" class="flex-1 p-4 tab-active">Supervisione Guide</button>
-        <button onclick="tab('anagrafica')" id="t-anagrafica" class="flex-1 p-4">Gestione Personale</button>
-    </div>
-
     <main class="max-w-5xl mx-auto space-y-6">
-        <section id="sec-guide" class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+        <section class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-[11px] font-bold">
                     <thead class="bg-slate-900 text-slate-400 uppercase tracking-widest">
-                        <tr><th class="p-4">Data/Ora</th><th class="p-4">Discente</th><th class="p-4">Trainer</th><th class="p-4">Mezzo</th><th class="p-4 text-center">Azioni</th></tr>
+                        <tr><th class="p-4">Data/Ora</th><th class="p-4">Discente</th><th class="p-4">Trainer</th><th class="p-4">Mezzo</th><th class="p-4">Azioni</th></tr>
                     </thead>
-                    <tbody id="admin-table" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                    <tbody id="admin-table" class="divide-y divide-slate-100"></tbody>
                 </table>
             </div>
-        </section>
-
-        <section id="sec-anagrafica" class="hidden space-y-6">
-            <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-50">
-                <h3 class="font-black uppercase mb-4 text-slate-800 tracking-tighter italic">Nuovo Membro</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-                    <select id="new-ruolo" class="p-3 bg-slate-50 rounded-xl border border-slate-100 font-bold outline-none"><option value="TRAINER">TRAINER</option><option value="DISCENTE">DISCENTE</option><option value="RESPONSABILE">RESPONSABILE</option></select>
-                    <input id="new-nome" type="text" placeholder="COGNOME NOME" class="p-3 bg-slate-50 rounded-xl border border-slate-100 uppercase font-bold outline-none shadow-inner">
-                    <input id="new-email" type="email" placeholder="email@cri.it" class="p-3 bg-slate-50 rounded-xl border border-slate-100 font-bold outline-none shadow-inner">
-                    <select id="new-cat" class="p-3 bg-slate-50 rounded-xl border border-slate-100 font-bold outline-none shadow-inner"><option value="">CAT (Pat 4/5)</option><option value="4">PAT 4</option><option value="5">PAT 5</option></select>
-                    <button onclick="addPersona()" class="cri-red text-white p-3 rounded-xl font-black shadow-lg shadow-red-100 uppercase tracking-widest active:scale-95 transition">Aggiungi</button>
-                </div>
-            </div>
-            <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 text-slate-700"><table class="w-full text-left text-xs font-bold"><thead class="bg-slate-50 uppercase text-slate-400 border-b"><tr><th class="p-4">Ruolo</th><th class="p-4">Cognome Nome</th><th class="p-4">Email / Dettagli</th><th class="p-4 text-center">Azioni</th></tr></thead><tbody id="anag-table" class="divide-y divide-slate-100"></tbody></table></div>
         </section>
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbzisixq5H1LEQnvl77PV5QIBbmPSDRNEWLS4ZM2AiD7j6L5wRnZXSeac9oyAcTARjbD/exec";
+        const API = "https://script.google.com/macros/s/AKfycbz1d4pHO2lvq-Us-zxTn9XGmknOnEfrhQubyPsXhyKzDOfp7juaN9i0atiKPCaWvDcz/exec";
 
         async function load() {
             const r = await fetch(API); const db = await r.json();
             document.getElementById('admin-table').innerHTML = db.richieste.map(r => `
                 <tr class="hover:bg-slate-50 border-b">
-                    <td class="p-4"><span class="text-red-600 font-black">${formattazioneEstesa(r[1])}</span><br>ORE ${r[2]}</td>
-                    <td class="p-4 uppercase text-slate-900 font-black">${r[3]}</td>
-                    <td class="p-4 uppercase ${r[5] ? 'text-green-600 font-black' : 'text-slate-300'}">${r[5] || 'In attesa'}</td>
-                    <td class="p-4"><input id="m-${r[0]}" value="${r[6] || ''}" onchange="setMezzo('${r[0]}')" placeholder="..." class="w-full border-b-2 border-slate-100 p-1 uppercase font-black outline-none bg-transparent"></td>
-                    <td class="p-4 text-center"><button onclick="delGuida('${r[0]}')" class="text-red-300 hover:text-red-600 transition"><i class="fas fa-trash-alt text-lg"></i></button></td>
+                    <td class="p-4"><span class="text-red-600 font-black">${r[1]}</span><br>ORE ${r[2]}</td>
+                    <td class="p-4 uppercase font-black">${r[3]}</td>
+                    <td class="p-4 uppercase ${r[5] ? 'text-green-600' : 'text-slate-300'}">${r[5] || 'In attesa'}</td>
+                    <td class="p-4"><input value="${r[6] || ''}" onchange="setMezzo('${r[0]}', this.value)" placeholder="..." class="w-full border-b-2 p-1 uppercase outline-none bg-transparent"></td>
+                    <td class="p-4"><button onclick="del('${r[0]}')" class="text-red-300 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
                 </tr>`).reverse().join('');
-            document.getElementById('anag-table').innerHTML = db.anagrafica.map(a => `<tr class="hover:bg-slate-50 border-b"><td class="p-4 font-black ${a[0]==='TRAINER'?'text-green-600':(a[0]==='RESPONSABILE'?'text-red-600':'text-blue-600')}">${a[0]}</td><td class="p-4 uppercase text-slate-900 font-black">${a[1]}</td><td class="p-4 text-slate-500 font-medium">${a[2]} ${a[3] ? ' - CAT ' + a[3] : ''}</td><td class="p-4 text-center"><button onclick="delPersona('${a[1]}')" class="text-red-500 bg-red-50 w-9 h-9 rounded-xl shadow-sm active:scale-90 transition"><i class="fas fa-user-minus"></i></button></td></tr>`).join('');
         }
 
-        function formattazioneEstesa(dStr) {
-            if(!dStr) return "";
-            let parti = dStr.split(/[-T/]/); let y, m, d;
-            if (parti[0].length === 4) { y = parti[0]; m = parti[1]; d = parti[2]; } else { d = parti[0]; m = parti[1]; y = parti[2]; }
-            return d + "/" + m + "/" + y;
-        }
-
-        async function addPersona() { const d = { azione: "ADD_PERSONA", ruolo: document.getElementById('new-ruolo').value, nome: document.getElementById('new-nome').value.toUpperCase(), email: document.getElementById('new-email').value, cat: document.getElementById('new-cat').value }; await fetch(API, { method: 'POST', body: JSON.stringify(d) }); load(); }
-        async function delPersona(n) { if(!confirm(`Eliminare ${n}?`)) return; await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: n }) }); load(); }
-        async function delGuida(id) { if(!confirm(`Annullare?`)) return; await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); load(); }
-        async function setMezzo(id) { const v = document.getElementById('m-'+id).value; await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: v.toUpperCase() }) }); }
-        function tab(t) { document.getElementById('sec-guide').classList.add('hidden'); document.getElementById('sec-anagrafica').classList.add('hidden'); document.getElementById('t-guide').classList.remove('tab-active'); document.getElementById('t-anagrafica').classList.remove('tab-active'); document.getElementById('sec-' + t).classList.remove('hidden'); document.getElementById('t-' + t).classList.add('tab-active'); }
+        async function del(id) { if(confirm("Annullare?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); location.reload(); } }
+        async function setMezzo(id, val) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val.toUpperCase() }) }); }
         window.onload = load;
     </script>
 </body>
