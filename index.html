@@ -7,40 +7,36 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; }
-        .cri-red { background-color: #ed1c24; }
-        input, select { font-size: 16px !important; }
-    </style>
+    <style>body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; }</style>
 </head>
 <body class="pb-10">
 
     <header class="bg-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center border-b-2 border-slate-100">
         <div class="flex items-center gap-3">
-            <img src="logo.png" alt="CRI" onerror="this.src='https://via.placeholder.com/40?text=CRI'" class="h-10 w-auto">
+            <img src="logo.png" alt="CRI" class="h-12 w-auto" onerror="this.style.display='none'">
             <h1 class="text-lg font-black uppercase text-slate-800">Area <span class="text-blue-600">Allievi</span></h1>
         </div>
         <div id="loading" class="hidden animate-spin text-blue-600"><i class="fas fa-spinner"></i></div>
     </header>
 
     <main class="p-4 max-w-xl mx-auto space-y-8">
-        <div id="error-box" class="hidden p-4 bg-red-600 text-white rounded-xl text-xs font-bold shadow-lg">
-            <p class="uppercase mb-1">⚠️ Errore di ricezione dati</p>
-            <div id="error-details" class="font-mono opacity-80"></div>
-        </div>
-
         <section class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100">
             <h2 class="text-xl font-black mb-6 uppercase italic text-center text-slate-800">Inoltra Disponibilità</h2>
             <div class="space-y-4">
-                <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Chi sei?</label>
-                <select id="all-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner"></select></div>
-                <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Giorno</label>
-                <input type="date" id="all-data" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner"></div>
+                <div>
+                    <label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Chi sei?</label>
+                    <select id="all-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner"></select>
+                </div>
+                <div>
+                    <label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Giorno</label>
+                    <input type="date" id="all-data" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner">
+                </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Dalle</label><input type="time" id="all-inizio" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner"></div>
                     <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Alle</label><input type="time" id="all-fine" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner"></div>
                 </div>
-                <button onclick="inoltra()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase shadow-lg shadow-blue-100 active:scale-95 transition">Inoltra Proposta</button>
+                <div id="msg-limite" class="hidden p-3 bg-orange-50 text-orange-700 text-[10px] font-black uppercase rounded-xl text-center"></div>
+                <button id="btn-inoltra" onclick="inoltra()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase shadow-lg shadow-blue-100 active:scale-95 transition">Inoltra Proposta</button>
             </div>
         </section>
 
@@ -49,76 +45,70 @@
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbySLTDbfnFg9wayDxEnCCi5oChr4sS4xycW7_EB-4pL_uM-gBnVYXkWTA3BQBrtvGNl/exec";
+        const API = "https://script.google.com/macros/s/AKfycbxwlkLd-AIKFVbmjnqxsVsqSPXlWGxNjeBhQVr0gzITIHM0uT_4gHEUSVh5e54MkTR4/exec";
         let db = { anagrafica: [], richieste: [] };
 
         async function load() {
-            const errBox = document.getElementById('error-box');
-            const errDet = document.getElementById('error-details');
             document.getElementById('loading').classList.remove('hidden');
-            
             try {
-                const response = await fetch(API);
-                const data = await response.json();
-                
-                if (!data || !data.anagrafica) {
-                    throw new Error("Il database è vuoto o non formattato correttamente.");
-                }
-                
-                db = data;
-                errBox.classList.add('hidden');
-
-                // Popola nomi
-                const selectAllievi = document.getElementById('all-nome');
-                const discenti = db.anagrafica.filter(x => x[0] && x[0].toUpperCase() === 'DISCENTE');
-                selectAllievi.innerHTML = '<option value="">-- Seleziona Nome --</option>' + 
+                const r = await fetch(API);
+                db = await r.json();
+                const discenti = db.anagrafica.filter(x => x[0] === 'DISCENTE');
+                document.getElementById('all-nome').innerHTML = '<option value="">-- Seleziona Nome --</option>' + 
                     discenti.map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
-                
                 updateView();
-            } catch(e) {
-                errDet.innerText = e.message;
-                errBox.classList.remove('hidden');
-            } finally {
-                document.getElementById('loading').classList.add('hidden');
-            }
+            } catch(e) { console.error(e); }
+            document.getElementById('loading').classList.add('hidden');
         }
 
         function fixData(s) {
             if(!s || s === "Data") return "";
             let p = s.split('T')[0].split(/[-/]/); 
-            let y, m, d;
-            if (p[0].length === 4) { y = p[0]; m = p[1]; d = p[2]; } else { d = p[0]; m = p[1]; y = p[2]; }
-            const dateObj = new Date(y, m - 1, d, 12, 0);
-            return dateObj.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
+            let y = p[0].length === 4 ? p[0] : p[2];
+            let m = p[0].length === 4 ? p[1] : p[1];
+            let d = p[0].length === 4 ? p[2] : p[0];
+            return new Date(y, m - 1, d, 12, 0).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
         }
 
         function updateView() {
             const nome = document.getElementById('all-nome').value;
-            const container = document.getElementById('mie-guide');
-            if(!nome || !db.richieste) return;
+            if(!nome) return;
+
+            // Controllo Limiti Allievo
+            const info = db.anagrafica.find(x => x[1] === nome);
+            const cat = info ? info[3] : "4";
+            const max = cat === "5" ? 6 : 4;
+            const attuali = db.richieste.filter(r => r[3] === nome && r[4] === 'ASSEGNATA').length;
+            
+            const msg = document.getElementById('msg-limite');
+            msg.classList.remove('hidden');
+            msg.innerText = `Percorso Patente ${cat}: ${attuali} / ${max} guide effettuate`;
 
             const mie = db.richieste.filter(r => r[3] === nome && (r[4]==='ASSEGNATA' || r[4]==='APERTA'));
-            
-            if(mie.length === 0) {
-                container.innerHTML = '<p class="text-center py-4 text-slate-300 font-bold uppercase text-[10px]">Nessuna richiesta trovata</p>';
-            } else {
-                container.innerHTML = mie.map(r => `
+            document.getElementById('mie-guide').innerHTML = mie.map(r => `
                 <div class="bg-white p-5 rounded-2xl shadow-sm border flex justify-between items-center">
                     <div>
                         <p class="text-[12px] font-black text-red-600 mb-0.5 uppercase">${fixData(r[1])}</p>
-                        <p class="font-bold uppercase text-[11px] text-slate-800 tracking-tighter">ORE ${r[2]} - ${r[4]==='ASSEGNATA' ? 'CON: ' + r[5] : 'IN ATTESA'}</p>
+                        <p class="font-bold uppercase text-[11px] text-slate-800">ORE ${r[2]} - ${r[4]==='ASSEGNATA' ? 'CON: ' + r[5] : 'IN ATTESA'}</p>
                     </div>
                     <span class="px-2 py-1 rounded-full text-[8px] font-black uppercase ${r[4]==='ASSEGNATA'?'bg-green-100 text-green-700':'bg-orange-100 text-orange-700'}">${r[4]==='ASSEGNATA'?'Confermata':'In Attesa'}</span>
                 </div>
-                `).reverse().join('');
-            }
+            `).reverse().join('');
         }
 
         async function inoltra() {
-            const data = { azione: "INOLTRA", allievo: document.getElementById('all-nome').value, giorno: document.getElementById('all-data').value, oraInizio: document.getElementById('all-inizio').value, oraFine: document.getElementById('all-fine').value };
-            if(!data.allievo || !data.giorno) return alert("Mancano dati!");
+            const nome = document.getElementById('all-nome').value;
+            const info = db.anagrafica.find(x => x[1] === nome);
+            const max = (info && info[3] === "5") ? 6 : 4;
+            const attuali = db.richieste.filter(r => r[3] === nome && r[4] === 'ASSEGNATA').length;
+
+            if (attuali >= max) return alert("⚠️ LIMITE RAGGIUNTO! Hai completato le guide previste.");
+
+            const d = { azione: "INOLTRA", allievo: nome, giorno: document.getElementById('all-data').value, oraInizio: document.getElementById('all-inizio').value, oraFine: document.getElementById('all-fine').value };
+            if(!d.allievo || !d.giorno || !d.oraInizio) return alert("Mancano dati!");
+            
             document.getElementById('loading').classList.remove('hidden');
-            await fetch(API, { method: 'POST', body: JSON.stringify(data) });
+            await fetch(API, { method: 'POST', body: JSON.stringify(d) });
             location.reload();
         }
         window.onload = load;
