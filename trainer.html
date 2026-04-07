@@ -13,6 +13,9 @@
         .accordion-content.open { max-height: 2000px; opacity: 1; padding-bottom: 1.5rem; }
         .rotate-icon { transition: transform 0.3s ease; }
         .rotate-icon.open { transform: rotate(180deg); }
+        .slot-pill { transition: all 0.2s ease; border: 2px solid transparent; }
+        .slot-pill:hover { border-color: #10b981; background: #ecfdf5; color: #065f46; }
+        .slot-pill:active { transform: scale(0.95); }
     </style>
 </head>
 <body class="pb-20">
@@ -37,7 +40,7 @@
 
         <section class="space-y-4">
             <div class="flex items-center justify-between px-2">
-                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest italic">Proposte Allievi</h3>
+                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest italic">Disponibilità Allievi</h3>
                 <span id="count-proposte" class="bg-green-100 text-green-700 text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
             </div>
             <div id="lista-proposte" class="space-y-4"></div>
@@ -94,17 +97,21 @@
             let idx = 0;
             for (const allievo in grouped) {
                 idx++;
-                const count = Object.values(grouped[allievo]).flat().length;
                 html += `
                 <div class="bg-white rounded-[2.5rem] shadow-xl border border-white overflow-hidden">
                     <div onclick="toggleAccordion('acc-${idx}')" class="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center font-black text-xs">${count}</div>
-                            <h4 class="text-lg font-black uppercase text-slate-800 tracking-tighter leading-tight">${allievo}</h4>
+                            <div class="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center shadow-inner">
+                                <i class="fas fa-user-graduate text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-black uppercase text-slate-800 tracking-tighter leading-tight">${allievo}</h4>
+                            </div>
                         </div>
                         <i id="icon-acc-${idx}" class="fas fa-chevron-down text-slate-300 text-sm rotate-icon"></i>
                     </div>
                     <div id="acc-${idx}" class="accordion-content px-6"><div class="space-y-6 pt-2 border-t border-slate-50">`;
+                
                 for (const data in grouped[allievo]) {
                     html += `<div><p class="text-[11px] font-black text-red-600 uppercase mb-2">${formatDataEstesa(data)}</p>
                             <div class="grid grid-cols-2 gap-2">
@@ -145,8 +152,11 @@
             if(!confirm(`Accetti la guida con ${allievo}?\n${data} ore ${ora}`)) return;
             
             document.getElementById('loader').classList.remove('hidden');
-            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ACCETTA", idRichiesta: id, allievo: allievo, istruttore: ist, dataGuida: data, oraGuida: ora }) });
-            location.reload();
+            try {
+                await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ACCETTA", idRichiesta: id, allievo: allievo, istruttore: ist, dataGuida: data, oraGuida: ora }) });
+                location.reload();
+            } catch (e) { alert("Errore durante l'accettazione."); }
+            document.getElementById('loader').classList.add('hidden');
         }
 
         function toggleAccordion(id) {
