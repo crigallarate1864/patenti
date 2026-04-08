@@ -17,17 +17,25 @@
 </head>
 <body class="pb-20">
 
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 px-4 py-3 flex justify-between items-center">
-        <div class="flex items-center gap-4">
-            <img src="logo.png" alt="CRI" class="w-16 h-auto" onerror="this.style.display='none'">
-            <div>
-                <h1 class="text-xl font-black uppercase leading-none">Pannello <span class="text-red-600">Admin</span></h1>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">CRI Gallarate</p>
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 px-4 py-3">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <img src="logo.png" alt="CRI" class="w-16 h-auto" onerror="this.style.display='none'">
+                <div>
+                    <h1 class="text-xl font-black uppercase leading-none">Pannello <span class="text-red-600">Admin</span></h1>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">CRI Gallarate</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-2">
+                <button onclick="generaRecapWA()" class="bg-green-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase flex items-center gap-2 shadow-lg shadow-green-100 hover:bg-green-700 transition">
+                    <i class="fab fa-whatsapp text-sm"></i> Recap
+                </button>
+                <button onclick="init()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:text-red-600 transition">
+                    <i id="sync-icon" class="fas fa-sync-alt"></i>
+                </button>
             </div>
         </div>
-        <button onclick="init()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:text-red-600 transition">
-            <i id="sync-icon" class="fas fa-sync-alt"></i>
-        </button>
     </header>
 
     <nav class="bg-white border-b border-slate-200 px-4 mb-6">
@@ -40,11 +48,10 @@
     <main class="p-4 max-w-4xl mx-auto">
         
         <div id="sec-guide" class="space-y-6">
-            <div class="flex gap-2 p-1 bg-slate-200 rounded-2xl w-fit">
+            <div class="flex gap-2 p-1 bg-slate-200 rounded-2xl w-fit mx-auto sm:mx-0">
                 <button onclick="filterStatus('APERTA')" id="f-aperta" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase transition bg-white shadow-sm">In Attesa</button>
                 <button onclick="filterStatus('ASSEGNATA')" id="f-assegnata" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase transition text-slate-500">Confermate</button>
             </div>
-
             <div id="lista-guide" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
@@ -68,7 +75,7 @@
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbySLTDbfnFg9wayDxEnCCi5oChr4sS4xycW7_EB-4pL_uM-gBnVYXkWTA3BQBrtvGNl/exec";
+        const API = "https://script.google.com/macros/s/AKfycbxwlkLd-AIKFVbmjnqxsVsqSPXlWGxNjeBhQVr0gzITIHM0uT_4gHEUSVh5e54MkTR4/exec";
         let db = { anagrafica: [], richieste: [] };
         let currentFilter = 'APERTA';
 
@@ -79,14 +86,47 @@
                 db = await r.json();
                 renderGuide();
                 renderStaff();
-            } catch (e) { alert("Errore caricamento dati"); }
+            } catch (e) { console.error(e); }
             document.getElementById('sync-icon').classList.remove('fa-spin');
+        }
+
+        // --- FUNZIONE RECAP WHATSAPP ---
+        function generaRecapWA() {
+            const confermate = db.richieste.filter(r => r[4] === 'ASSEGNATA' && r[0] !== "ID");
+            
+            if (confermate.length === 0) return alert("Nessuna guida confermata da includere nel recap.");
+
+            // Ordina per data
+            confermate.sort((a,b) => new Date(a[1]) - new Date(b[1]));
+
+            let messaggio = "🚗 *RIEPILOGO GUIDE CONFERMATE - CRI GALLARATE*\n\n";
+            
+            let ultimaData = "";
+            confermate.forEach(r => {
+                if (r[1] !== ultimaData) {
+                    messaggio += `\n📅 *${r[1].toUpperCase()}*\n`;
+                    ultimaData = r[1];
+                }
+                messaggio += `• Ore ${r[2]}: _${r[3]}_ con *${r[5]}* ${r[6] ? '['+r[6]+']' : ''}\n`;
+            });
+
+            messaggio += "\n\n_Aggiornato automaticamente dal gestionale_";
+
+            const waUrl = `https://wa.me/?text=${encodeURIComponent(messaggio)}`;
+            
+            if (confirm("Vuoi aprire WhatsApp per inviare il recap?")) {
+                window.open(waUrl, '_blank');
+            } else {
+                // Copia negli appunti come alternativa
+                navigator.clipboard.writeText(messaggio).then(() => {
+                    alert("Recap copiato negli appunti!");
+                });
+            }
         }
 
         function renderGuide() {
             const container = document.getElementById('lista-guide');
             const filtered = db.richieste.filter(r => r[4] === currentFilter && r[0] !== "ID");
-            
             container.innerHTML = filtered.map(r => `
                 <div class="card p-5 space-y-4">
                     <div class="flex justify-between items-start">
@@ -98,9 +138,8 @@
                         <button onclick="delGuida('${r[0]}')" class="text-slate-300 hover:text-red-600 transition p-2"><i class="fas fa-trash"></i></button>
                     </div>
                     <div class="pt-3 border-t flex items-center gap-2">
-                        <input id="targa-${r[0]}" type="text" value="${r[6] || ''}" placeholder="Targa mezzo..." 
-                               class="flex-1 text-xs font-black uppercase py-2 px-3 bg-slate-50 rounded-lg border-none shadow-inner outline-none focus:ring-1 focus:ring-red-500">
-                        <button onclick="salvaTarga('${r[0]}')" class="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center hover:bg-green-600 transition shadow-md">
+                        <input id="targa-${r[0]}" type="text" value="${r[6] || ''}" placeholder="Targa..." class="flex-1 text-xs font-black uppercase py-2 px-3 bg-slate-50 rounded-lg border-none shadow-inner outline-none">
+                        <button onclick="salvaTarga('${r[0]}')" class="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center hover:bg-green-600 shadow-md">
                             <i class="fas fa-save"></i>
                         </button>
                     </div>
@@ -111,20 +150,18 @@
 
         async function salvaTarga(id) {
             const val = document.getElementById('targa-'+id).value.toUpperCase();
-            document.getElementById('sync-icon').classList.add('fa-spin');
             try {
                 await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val }) });
-                alert("Targa salvata con successo!");
-            } catch(e) { alert("Errore salvataggio."); }
-            document.getElementById('sync-icon').classList.remove('fa-spin');
+                alert("Targa salvata!");
+            } catch(e) { alert("Errore."); }
         }
 
         function renderStaff() {
             const container = document.getElementById('lista-staff');
             container.innerHTML = db.anagrafica.filter(a => a[0] !== "RUOLO" && a[0] !== "").map(a => `
-                <tr class="hover:bg-slate-50 transition font-bold">
+                <tr class="hover:bg-slate-50 transition font-bold border-b">
                     <td class="p-4 uppercase text-[9px] tracking-widest ${a[0] === 'TRAINER' ? 'text-green-600' : 'text-blue-600'}">${a[0]}</td>
-                    <td class="p-4 uppercase text-xs">${a[1]} <br> <span class="text-[9px] text-slate-400 font-normal">${a[2]}</span></td>
+                    <td class="p-4 uppercase text-xs">${a[1]}</td>
                     <td class="p-4 text-center"><button onclick="delPersona('${a[1]}')" class="text-red-300 hover:text-red-500 transition"><i class="fas fa-user-minus"></i></button></td>
                 </tr>`).join('');
         }
