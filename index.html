@@ -19,9 +19,25 @@
         <div id="loading" class="hidden animate-spin text-blue-600"><i class="fas fa-spinner"></i></div>
     </header>
 
-    <main class="p-4 max-w-xl mx-auto space-y-8">
+    <main class="p-4 max-w-xl mx-auto space-y-6">
+        
+        <div id="dashboard-allievo" class="hidden grid grid-cols-3 gap-2">
+            <div class="bg-blue-600 text-white p-3 rounded-2xl text-center shadow-lg shadow-blue-100">
+                <p class="text-[9px] font-bold uppercase opacity-80">Prenotate</p>
+                <p id="stat-prenotate" class="text-2xl font-black italic">0</p>
+            </div>
+            <div class="bg-green-500 text-white p-3 rounded-2xl text-center shadow-lg shadow-green-100">
+                <p class="text-[9px] font-bold uppercase opacity-80">Effettuate</p>
+                <p id="stat-fatte" class="text-2xl font-black italic">0</p>
+            </div>
+            <div class="bg-slate-800 text-white p-3 rounded-2xl text-center shadow-lg shadow-slate-100">
+                <p class="text-[9px] font-bold uppercase opacity-80">Residue</p>
+                <p id="stat-residue" class="text-2xl font-black italic">0</p>
+            </div>
+        </div>
+
         <section class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100">
-            <h2 class="text-xl font-black mb-6 uppercase italic text-center text-slate-800">Inoltra Disponibilità</h2>
+            <h2 class="text-xl font-black mb-6 uppercase italic text-center text-slate-800 leading-none">Inoltra<br><span class="text-blue-600 text-sm">Nuova Disponibilità</span></h2>
             <div class="space-y-4">
                 <div>
                     <label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Chi sei?</label>
@@ -35,7 +51,6 @@
                     <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Dalle</label><input type="time" id="all-inizio" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner"></div>
                     <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Alle</label><input type="time" id="all-fine" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner"></div>
                 </div>
-                <div id="msg-limite" class="hidden p-3 bg-blue-50 text-blue-700 text-[10px] font-black uppercase rounded-xl text-center border border-blue-100"></div>
                 <button id="btn-inoltra" onclick="inoltra()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase shadow-lg shadow-blue-100 active:scale-95 transition">Inoltra Proposta</button>
             </div>
         </section>
@@ -79,6 +94,8 @@
             const nome = document.getElementById('all-nome').value;
             if(!nome) return;
 
+            document.getElementById('dashboard-allievo').classList.remove('hidden');
+
             const info = db.anagrafica.find(x => x[1] === nome);
             const cat = info ? info[3] : "4";
             const max = cat === "5" ? 6 : 4;
@@ -95,16 +112,16 @@
                 else prenotate++;
             });
 
-            const msg = document.getElementById('msg-limite');
-            msg.classList.remove('hidden');
-            msg.innerHTML = `Patente ${cat}: <span class="text-green-600">${effettuate} effettuate</span>, <span class="text-blue-600">${prenotate} prenotate</span><br>(Totale: ${effettuate + prenotate} / ${max})`;
+            document.getElementById('stat-prenotate').innerText = prenotate;
+            document.getElementById('stat-fatte').innerText = effettuate;
+            document.getElementById('stat-residue').innerText = Math.max(0, max - (effettuate + prenotate));
 
             const mie = db.richieste.filter(r => r[3] === nome && (r[4]==='ASSEGNATA' || r[4]==='APERTA'));
             document.getElementById('mie-guide').innerHTML = mie.map(r => `
                 <div class="bg-white p-5 rounded-2xl shadow-sm border flex justify-between items-center">
                     <div>
                         <p class="text-[12px] font-black text-red-600 mb-0.5 uppercase">${fixData(r[1])}</p>
-                        <p class="font-bold uppercase text-[11px] text-slate-800">ORE ${r[2]} - ${r[4]==='ASSEGNATA' ? 'CON: ' + r[5] : 'IN ATTESA'}</p>
+                        <p class="font-bold uppercase text-[11px] text-slate-800 leading-tight">ORE ${r[2]} - ${r[4]==='ASSEGNATA' ? 'CON: ' + r[5] : 'IN ATTESA'}</p>
                     </div>
                     <span class="px-2 py-1 rounded-full text-[8px] font-black uppercase ${r[4]==='ASSEGNATA'?'bg-green-100 text-green-700':'bg-orange-100 text-orange-700'}">${r[4]==='ASSEGNATA'?'Confermata':'In Attesa'}</span>
                 </div>
