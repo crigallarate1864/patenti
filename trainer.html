@@ -13,9 +13,6 @@
         .accordion-content.open { max-height: 2000px; opacity: 1; padding-bottom: 1.5rem; }
         .rotate-icon { transition: transform 0.3s ease; }
         .rotate-icon.open { transform: rotate(180deg); }
-        .slot-pill { transition: all 0.2s ease; border: 2px solid transparent; }
-        .slot-pill:hover { border-color: #10b981; background: #ecfdf5; color: #065f46; }
-        .slot-pill:active { transform: scale(0.95); }
     </style>
 </head>
 <body class="pb-20">
@@ -31,7 +28,25 @@
         <div id="loader" class="hidden animate-spin text-green-600 text-xl"><i class="fas fa-circle-notch"></i></div>
     </header>
 
-    <main class="p-4 max-w-xl mx-auto space-y-8 mt-4">
+    <main class="p-4 max-w-xl mx-auto space-y-6 mt-4">
+
+        <div id="db-trainer" class="hidden space-y-3">
+            <div class="bg-slate-900 text-white p-4 rounded-3xl flex justify-between items-center shadow-xl">
+                <div>
+                    <p class="text-[10px] font-bold uppercase opacity-60 italic">Guide Confermate</p>
+                    <p id="t-stat-tot" class="text-3xl font-black leading-none">0</p>
+                </div>
+                <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-clipboard-check text-xl text-green-400"></i>
+                </div>
+            </div>
+            
+            <div id="next-guida-box" class="hidden bg-white p-4 rounded-3xl border-2 border-green-500 shadow-lg">
+                <p class="text-[9px] font-black text-green-600 uppercase mb-1 tracking-widest"><i class="fas fa-star mr-1"></i> Prossimo Impegno</p>
+                <div id="next-guida-content"></div>
+            </div>
+        </div>
+
         <div class="bg-white p-5 rounded-[2rem] shadow-xl border border-white">
             <label class="text-[10px] font-black uppercase text-slate-400 ml-2 mb-2 block tracking-widest italic">Identità Istruttore</label>
             <select id="ist-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl font-extrabold border-none outline-none text-slate-700 shadow-inner">
@@ -40,14 +55,14 @@
 
         <section class="space-y-4">
             <div class="flex items-center justify-between px-2">
-                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest italic">Disponibilità Allievi</h3>
+                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest italic">Proposte Allievi</h3>
                 <span id="count-proposte" class="bg-green-100 text-green-700 text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
             </div>
             <div id="lista-proposte" class="space-y-4"></div>
         </section>
 
         <section class="space-y-4 pt-4">
-            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest italic text-center">I Miei Prossimi Impegni</h3>
+            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest italic text-center">I Miei Impegni Storici</h3>
             <div id="miei-impegni" class="space-y-3"></div>
         </section>
     </main>
@@ -71,13 +86,18 @@
             document.getElementById('loader').classList.add('hidden');
         }
 
-        function formatDataEstesa(s) {
-            if(!s || s === "Data") return "";
+        function parseDataLocale(s) {
             let p = s.split('T')[0].split(/[-/]/); 
             let y = p[0].length === 4 ? p[0] : p[2];
-            let m = p[0].length === 4 ? p[1] : p[1];
+            let m = p[1];
             let d = p[0].length === 4 ? p[2] : p[0];
-            return new Date(y, m - 1, d, 12, 0).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
+            return new Date(y, m - 1, d, 0, 0, 0);
+        }
+
+        function formatDataEstesa(s) {
+            if(!s || s === "Data") return "";
+            const dObj = parseDataLocale(s);
+            return dObj.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
         }
 
         function renderProposte() {
@@ -126,7 +146,28 @@
         function updateView() {
             const ist = document.getElementById('ist-nome').value;
             if(!ist) return;
+
+            document.getElementById('db-trainer').classList.remove('hidden');
             const miei = db.richieste.filter(r => r[5] === ist && r[4] === 'ASSEGNATA');
+            
+            // Stats
+            document.getElementById('t-stat-tot').innerText = miei.length;
+
+            // Trova la prossima guida (nel futuro)
+            const oggi = new Date(); oggi.setHours(0,0,0,0);
+            const future = miei.filter(r => parseDataLocale(r[1]) >= oggi).sort((a,b) => parseDataLocale(a[1]) - parseDataLocale(b[1]));
+
+            const nextBox = document.getElementById('next-guida-box');
+            if(future.length > 0) {
+                nextBox.classList.remove('hidden');
+                document.getElementById('next-guida-content').innerHTML = `
+                    <p class="font-black text-slate-800 text-sm uppercase leading-none">${formatDataEstesa(future[0][1])}</p>
+                    <p class="text-xs font-bold text-slate-500 uppercase">Ore ${future[0][2]} — ${future[0][3]}</p>
+                `;
+            } else {
+                nextBox.classList.add('hidden');
+            }
+
             document.getElementById('miei-impegni').innerHTML = miei.map(r => `
                 <div class="bg-white p-5 rounded-[2rem] shadow-md border border-white flex justify-between items-center">
                     <div>
