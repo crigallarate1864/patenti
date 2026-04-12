@@ -3,27 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
     <title>CRI Allievi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; }</style>
+    <style>
+        body { font-family: 'Outfit', sans-serif; background: #f8fafc; }
+        .progress-bar { transition: width 1s ease-in-out; }
+    </style>
 </head>
 <body class="pb-10">
-    <header class="bg-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center">
-        <div class="flex items-center gap-3"><img src="logo.png" class="h-12 w-auto" onerror="this.style.display='none'"><h1 class="text-lg font-black uppercase">Area <span class="text-blue-600">Allievi</span></h1></div>
-        <div id="loading" class="hidden animate-spin text-blue-600"><i class="fas fa-spinner"></i></div>
+    <header class="bg-white p-4 shadow-sm sticky top-0 z-50 flex justify-between items-center border-b">
+        <div class="flex items-center gap-3"><img src="logo.png" class="h-10"> <h1 class="font-black uppercase text-sm">Area <span class="text-blue-600">Allievi</span></h1></div>
+        <div id="loading" class="hidden animate-spin text-blue-600"><i class="fas fa-circle-notch"></i></div>
     </header>
 
     <main class="p-4 max-w-xl mx-auto space-y-6">
-        <div id="dashboard-allievo" class="hidden grid grid-cols-3 gap-2">
-            <div class="bg-blue-600 text-white p-3 rounded-2xl text-center shadow-lg"><p class="text-[9px] font-bold uppercase opacity-80">Prenotate</p><p id="stat-prenotate" class="text-2xl font-black italic">0</p></div>
-            <div class="bg-green-500 text-white p-3 rounded-2xl text-center shadow-lg"><p class="text-[9px] font-bold uppercase opacity-80">Effettuate</p><p id="stat-fatte" class="text-2xl font-black italic">0</p></div>
-            <div class="bg-slate-800 text-white p-3 rounded-2xl text-center shadow-lg"><p class="text-[9px] font-bold uppercase opacity-80">Residue</p><p id="stat-residue" class="text-2xl font-black italic">0</p></div>
+        <div id="card-progresso" class="hidden bg-white p-5 rounded-[2rem] shadow-xl border">
+            <div class="flex justify-between items-end mb-2">
+                <p class="text-[10px] font-black uppercase text-slate-400">Il tuo percorso patente</p>
+                <p id="txt-progresso" class="text-xs font-black text-blue-600">0%</p>
+            </div>
+            <div class="w-full bg-slate-100 h-4 rounded-full overflow-hidden">
+                <div id="bar-progresso" class="progress-bar bg-blue-600 h-full w-0"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+                <div><p id="stat-fatte" class="text-lg font-black leading-none">0</p><p class="text-[8px] uppercase font-bold text-slate-400">Fatte</p></div>
+                <div><p id="stat-pren" class="text-lg font-black leading-none text-blue-600">0</p><p class="text-[8px] uppercase font-bold text-slate-400">Prenotate</p></div>
+                <div><p id="stat-res" class="text-lg font-black leading-none text-red-500">0</p><p class="text-[8px] uppercase font-bold text-slate-400">Mancanti</p></div>
+            </div>
         </div>
 
-        <section class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100">
-            <h2 class="text-lg font-black mb-4 uppercase italic text-center text-slate-700">Inoltra Disponibilità</h2>
+        <section class="bg-white p-6 rounded-[2.5rem] shadow-xl border">
             <div class="space-y-4">
                 <select id="all-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner"></select>
                 <input type="date" id="all-data" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner">
@@ -31,61 +43,75 @@
                     <input type="time" id="all-inizio" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner">
                     <input type="time" id="all-fine" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner">
                 </div>
-                <button onclick="inoltra()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase shadow-lg active:scale-95 transition">Inoltra Proposta</button>
+                <button onclick="inoltra()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase shadow-lg active:scale-95 transition">Inoltra Disponibilità</button>
             </div>
         </section>
-        
+
+        <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+            <button onclick="setFiltroOra('all')" class="bg-white px-4 py-2 rounded-xl text-[10px] font-black uppercase border shadow-sm flex-shrink-0">Tutte</button>
+            <button onclick="setFiltroOra('mattina')" class="bg-white px-4 py-2 rounded-xl text-[10px] font-black uppercase border shadow-sm flex-shrink-0">Mattina (8-13)</button>
+            <button onclick="setFiltroOra('pomeriggio')" class="bg-white px-4 py-2 rounded-xl text-[10px] font-black uppercase border shadow-sm flex-shrink-0">Pomeriggio (14-20)</button>
+        </div>
+
         <div id="mie-guide" class="space-y-3"></div>
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbx-uPuEAgD1T1FpXFCz7wGdWULbhu12Z6Fwi47GUm-IjwOrl7aljcBLmHyQkP8vpe7M/exec";
-        let db = { anagrafica: [], richieste: [] };
+        const API = "https://script.google.com/macros/s/AKfycbzYeHgRqZk3hcb7A1yqBlb8mBZVNgtDupl0KDzX7LFXsjM-JuevQPnUtye74kM9ZtJU/exec";
+        let db = { requests: [] };
+        let filtroOra = 'all';
 
         async function init() {
             document.getElementById('loading').classList.remove('hidden');
             try {
                 const r = await fetch(API); db = await r.json();
-                document.getElementById('all-nome').innerHTML = '<option value="">-- Seleziona Nome --</option>' + db.anagrafica.filter(x => x[0] === 'DISCENTE').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
+                const discenti = db.anagrafica.filter(x => x[0] === 'DISCENTE');
+                document.getElementById('all-nome').innerHTML = '<option value="">-- Seleziona Nome --</option>' + 
+                    discenti.map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
                 updateView();
             } catch(e) {}
             document.getElementById('loading').classList.add('hidden');
         }
 
-        function parseD(s) { 
-            if(!s || s === "Data") return new Date(2099,1,1);
-            let p = s.split('T')[0].split(/[-/]/);
-            return new Date(p[0].length===4?p[0]:p[2], p[1]-1, p[0].length===4?p[2]:p[0], 12, 0, 0); 
-        }
+        function parseD(s) { let p = s.split('T')[0].split(/[-/]/); return new Date(p[0].length===4?p[0]:p[2], p[1]-1, p[0].length===4?p[2]:p[0], 12, 0, 0); }
+        function fixD(s) { let d = parseD(s); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`; }
 
-        function fixD(s) { 
-            const d = parseD(s);
-            return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
-        }
+        function setFiltroOra(f) { filtroOra = f; updateView(); }
 
         function updateView() {
             const nome = document.getElementById('all-nome').value; if(!nome) return;
-            document.getElementById('dashboard-allievo').classList.remove('hidden');
+            document.getElementById('card-progresso').classList.remove('hidden');
             const info = db.anagrafica.find(x => x[1] === nome);
-            const cat = info ? info[3] : "4"; const max = cat === "5" ? 6 : 4;
+            const max = (info && info[3] === "5") ? 6 : 4;
             const oggi = new Date(); oggi.setHours(0,0,0,0);
+            
             const assegnate = db.richieste.filter(r => r[3] === nome && r[4] === 'ASSEGNATA');
             let fatte = 0, pren = 0;
             assegnate.forEach(r => { if (parseD(r[1]) < oggi) fatte++; else pren++; });
-            document.getElementById('stat-prenotate').innerText = pren;
+
+            // Update Progress Bar
+            const perc = Math.round(((fatte + pren) / max) * 100);
+            document.getElementById('bar-progresso').style.width = perc + "%";
+            document.getElementById('txt-progresso').innerText = perc + "%";
             document.getElementById('stat-fatte').innerText = fatte;
-            document.getElementById('stat-residue').innerText = Math.max(0, max - (fatte + pren));
+            document.getElementById('stat-pren').innerText = pren;
+            document.getElementById('stat-res').innerText = Math.max(0, max - (fatte + pren));
+
+            // Lista con filtro orario
+            let mie = db.richieste.filter(r => r[3] === nome && (r[4]==='ASSEGNATA' || r[4]==='APERTA'));
             
-            const mie = db.richieste.filter(r => r[3] === nome && (r[4]==='ASSEGNATA' || r[4]==='APERTA')).sort((a,b) => parseD(a[1]) - parseD(b[1]));
-            document.getElementById('mie-guide').innerHTML = mie.map(r => `
+            if(filtroOra === 'mattina') mie = mie.filter(r => parseInt(r[2].split(':')[0]) < 13);
+            if(filtroOra === 'pomeriggio') mie = mie.filter(r => parseInt(r[2].split(':')[0]) >= 14);
+
+            document.getElementById('mie-guide').innerHTML = mie.sort((a,b) => parseD(a[1]) - parseD(b[1])).map(r => `
                 <div class="bg-white p-5 rounded-2xl shadow-sm border flex justify-between items-center">
-                    <div><p class="text-[14px] font-black text-red-600 mb-0.5">${fixD(r[1])}</p><p class="font-bold uppercase text-[11px] text-slate-800">ORE ${r[2]} - ${r[4]==='ASSEGNATA' ? 'CON: ' + r[5] : 'IN ATTESA'}</p></div>
-                    <span class="px-2 py-1 rounded-full text-[8px] font-black uppercase ${r[4]==='ASSEGNATA'?'bg-green-100 text-green-700':'bg-orange-100 text-orange-700'}">${r[4]==='ASSEGNATA'?'Ok':'...'}</span>
-                </div>`).join('');
+                    <div><p class="text-[14px] font-black text-red-600 mb-0.5">${fixD(r[1])}</p><p class="font-bold uppercase text-[11px] text-slate-800">ORE ${r[2]} - ${r[4]}</p></div>
+                    <span class="px-2 py-1 rounded-full text-[8px] font-black uppercase ${r[4]==='ASSEGNATA'?'bg-green-100 text-green-700':'bg-orange-100 text-orange-700'}">${r[4]==='ASSEGNATA'?'OK':'...'}</span>
+                </div>`).reverse().join('');
         }
 
         async function inoltra() {
-            const n = document.getElementById('all-nome').value; if(!n) return alert("Seleziona chi sei!");
+            const n = document.getElementById('all-nome').value; if(!n) return alert("Chi sei?");
             document.getElementById('loading').classList.remove('hidden');
             await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "INOLTRA", allievo: n, giorno: document.getElementById('all-data').value, oraInizio: document.getElementById('all-inizio').value, oraFine: document.getElementById('all-fine').value }) });
             location.reload();
