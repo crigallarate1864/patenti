@@ -12,27 +12,41 @@
             font-family: 'Outfit', sans-serif; 
             background-color: #f8fafc; 
             color: #0f172a;
-            font-size: 18px; /* Base font aumentata */
+            font-size: 18px; 
         }
-        .tab-active { 
-            background-color: #ed1c24; 
+        
+        /* FIX COLORI TASTI NAVIGAZIONE */
+        .tab-btn {
+            background-color: #f1f5f9;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.tab-active { 
+            background-color: #ed1c24 !important; 
             color: white !important; 
-            box-shadow: 0 10px 15px -3px rgba(237, 28, 36, 0.3);
+            border-color: #ed1c24 !important;
+            box-shadow: 0 10px 15px -3px rgba(237, 28, 36, 0.4);
         }
+
+        /* FIX COLORI FILTRI (In Attesa / Confermate) */
+        .filter-btn {
+            background-color: #f1f5f9;
+            color: #64748b;
+            transition: all 0.2s ease;
+        }
+        .filter-btn.filter-active {
+            background-color: #1e293b !important;
+            color: white !important;
+        }
+
         .hidden { display: none; }
         .card-admin { 
             background: white; 
             border-radius: 2rem; 
             border: 2px solid #e2e8f0;
-            transition: all 0.2s ease;
         }
-        .card-admin:hover { border-color: #ed1c24; }
         input, select { font-size: 1.1rem !important; }
-        
-        /* Scrollbar pulita */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="pb-20">
@@ -47,10 +61,10 @@
                 </div>
             </div>
             <div class="flex gap-4">
-                <button onclick="esportaCSV()" class="bg-slate-800 text-white px-6 py-3 rounded-2xl font-black uppercase text-sm flex items-center gap-2 hover:bg-black transition">
+                <button onclick="esportaCSV()" class="bg-slate-800 text-white px-6 py-3 rounded-2xl font-black uppercase text-sm flex items-center gap-2 hover:bg-black transition shadow-lg">
                     <i class="fas fa-file-csv text-lg"></i> Esporta dati
                 </button>
-                <button onclick="init()" class="w-14 h-14 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center hover:bg-red-600 hover:text-white transition">
+                <button onclick="init()" class="w-14 h-14 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center hover:bg-red-600 hover:text-white transition shadow-sm">
                     <i id="sync" class="fas fa-sync-alt text-xl"></i>
                 </button>
             </div>
@@ -59,16 +73,16 @@
 
     <nav class="max-w-7xl mx-auto px-6 py-8">
         <div class="flex flex-wrap gap-4">
-            <button onclick="switchTab('guide')" id="t-guide" class="px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-slate-400 bg-white border-2 border-slate-100 transition-all tab-active">
+            <button onclick="switchTab('guide')" id="t-guide" class="tab-btn tab-active px-8 py-4 rounded-2xl font-black uppercase tracking-widest">
                 <i class="fas fa-calendar-check mr-2"></i> Guide Attive
             </button>
-            <button onclick="switchTab('archivio')" id="t-archivio" class="px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-slate-400 bg-white border-2 border-slate-100 transition-all">
+            <button onclick="switchTab('archivio')" id="t-archivio" class="tab-btn px-8 py-4 rounded-2xl font-black uppercase tracking-widest">
                 <i class="fas fa-archive mr-2"></i> Archivio
             </button>
-            <button onclick="switchTab('staff')" id="t-staff" class="px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-slate-400 bg-white border-2 border-slate-100 transition-all">
+            <button onclick="switchTab('staff')" id="t-staff" class="tab-btn px-8 py-4 rounded-2xl font-black uppercase tracking-widest">
                 <i class="fas fa-users mr-2"></i> Staff & Allievi
             </button>
-            <button onclick="switchTab('mezzi')" id="t-mezzi" class="px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-slate-400 bg-white border-2 border-slate-100 transition-all">
+            <button onclick="switchTab('mezzi')" id="t-mezzi" class="tab-btn px-8 py-4 rounded-2xl font-black uppercase tracking-widest">
                 <i class="fas fa-ambulance mr-2"></i> Parco Mezzi
             </button>
         </div>
@@ -77,9 +91,9 @@
     <main class="max-w-7xl mx-auto px-6">
         
         <div id="sec-guide" class="space-y-8">
-            <div class="flex items-center gap-4 mb-8">
-                <button onclick="filterStatus('APERTA')" id="f-aperta" class="px-6 py-2 rounded-xl font-black text-sm uppercase bg-white border-2 border-slate-200">In Attesa</button>
-                <button onclick="filterStatus('ASSEGNATA')" id="f-assegnata" class="px-6 py-2 rounded-xl font-black text-sm uppercase bg-slate-200 text-slate-600">Confermate</button>
+            <div class="flex items-center gap-4 mb-8 bg-slate-100 p-2 rounded-2xl w-fit">
+                <button onclick="filterStatus('APERTA')" id="f-aperta" class="filter-btn filter-active px-8 py-3 rounded-xl font-black text-sm uppercase">In Attesa</button>
+                <button onclick="filterStatus('ASSEGNATA')" id="f-assegnata" class="filter-btn px-8 py-3 rounded-xl font-black text-sm uppercase">Confermate</button>
             </div>
             <div id="lista-guide" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8"></div>
         </div>
@@ -101,29 +115,29 @@
         </div>
 
         <div id="sec-staff" class="hidden space-y-10">
-            <div class="bg-white p-10 rounded-[3rem] border-4 border-slate-100 shadow-2xl">
-                <h2 class="text-2xl font-black mb-8 uppercase tracking-tighter">Inserimento Nuovo Profilo</h2>
+            <div class="bg-white p-10 rounded-[3rem] border-4 border-slate-100 shadow-xl">
+                <h2 class="text-2xl font-black mb-8 uppercase tracking-tighter text-red-600">Inserimento Nuovo Profilo</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                    <select id="add-ruolo" class="p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold outline-none focus:border-red-600">
+                    <select id="add-ruolo" class="p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold outline-none">
                         <option value="DISCENTE">DISCENTE</option>
                         <option value="TRAINER">TRAINER</option>
                         <option value="RESPONSABILE">ADMIN</option>
                     </select>
-                    <input type="text" id="add-nome" placeholder="COGNOME NOME" class="p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold uppercase outline-none focus:border-red-600">
-                    <input type="email" id="add-email" placeholder="EMAIL" class="p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold outline-none focus:border-red-600">
-                    <select id="add-cat" class="p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold outline-none focus:border-red-600">
+                    <input type="text" id="add-nome" placeholder="COGNOME NOME" class="p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold uppercase outline-none">
+                    <input type="email" id="add-email" placeholder="EMAIL" class="p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold outline-none">
+                    <select id="add-cat" class="p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold outline-none">
                         <option value="4">PATENTE 4</option>
                         <option value="5">PATENTE 5</option>
                     </select>
-                    <button onclick="addPersona()" class="bg-red-600 text-white font-black p-5 rounded-2xl uppercase shadow-lg hover:scale-105 transition">Aggiungi</button>
+                    <button onclick="addPersona()" class="bg-red-600 text-white font-black p-5 rounded-2xl uppercase shadow-lg hover:bg-black transition">Aggiungi</button>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-staff"></div>
         </div>
 
-        <div id="sec-mezzi" class="hidden space-y-10">
-            <div class="bg-white p-10 rounded-[3rem] border-4 border-slate-100 shadow-xl max-w-2xl mx-auto text-center">
-                <h2 class="text-2xl font-black mb-6 uppercase">Aggiungi Mezzo</h2>
+        <div id="sec-mezzi" class="hidden space-y-10 text-center">
+            <div class="bg-white p-10 rounded-[3rem] border-4 border-slate-100 shadow-xl max-w-2xl mx-auto">
+                <h2 class="text-2xl font-black mb-6 uppercase text-slate-800">Aggiungi Mezzo</h2>
                 <div class="flex gap-4">
                     <input type="text" id="add-targa" placeholder="TARGA (ES. CRI 1234)" class="flex-1 p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold uppercase text-center outline-none">
                     <button onclick="addMezzo()" class="bg-slate-900 text-white font-black px-10 rounded-2xl uppercase">Salva</button>
@@ -135,7 +149,7 @@
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbx-uPuEAgD1T1FpXFCz7wGdWULbhu12Z6Fwi47GUm-IjwOrl7aljcBLmHyQkP8vpe7M/exec";
+        const API = "https://script.google.com/macros/s/AKfycbzYeHgRqZk3hcb7A1yqBlb8mBZVNgtDupl0KDzX7LFXsjM-JuevQPnUtye74kM9ZtJU/exec";
         let db = { anagrafica: [], richieste: [], veicoli: [] };
         let currentFilter = 'APERTA';
 
@@ -144,7 +158,7 @@
             try {
                 const r = await fetch(API); db = await r.json();
                 renderAll();
-            } catch (e) { alert("Errore di connessione."); }
+            } catch (e) { alert("Errore connessione."); }
             document.getElementById('sync').classList.remove('fa-spin');
         }
 
@@ -162,7 +176,6 @@
         function renderAll() {
             const oggi = new Date(); oggi.setHours(0,0,0,0);
             
-            // Render Guide
             const listGuide = document.getElementById('lista-guide');
             const filt = db.richieste.filter(r => r[4] === currentFilter && r[0] !== "ID" && r[3]).sort((a,b) => parseD(a[1]) - parseD(b[1]));
             listGuide.innerHTML = filt.map(r => `
@@ -170,12 +183,12 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-red-600 font-black text-xl mb-1">${fixD(r[1])}</p>
-                            <h4 class="text-2xl font-black uppercase text-slate-800 tracking-tight">${r[3]}</h4>
-                            <p class="text-lg font-bold text-slate-400 mt-2"><i class="far fa-clock mr-2"></i> ${r[2]}</p>
+                            <h4 class="text-2xl font-black uppercase text-slate-800 tracking-tight leading-none">${r[3]}</h4>
+                            <p class="text-lg font-bold text-slate-400 mt-4"><i class="far fa-clock mr-2"></i> ${r[2]}</p>
                         </div>
-                        <button onclick="delGuida('${r[0]}')" class="text-slate-300 hover:text-red-600 text-2xl transition"><i class="fas fa-trash-alt"></i></button>
+                        <button onclick="delGuida('${r[0]}')" class="text-slate-200 hover:text-red-600 text-2xl transition"><i class="fas fa-trash-alt"></i></button>
                     </div>
-                    <div class="pt-6 border-t-2 flex flex-col gap-4">
+                    <div class="pt-6 border-t-2 flex flex-col gap-3">
                         <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Assegnazione Mezzo</label>
                         <select onchange="salvaTarga('${r[0]}', this.value)" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl font-black text-lg">
                             <option value="">Scegli Mezzo...</option>
@@ -185,33 +198,30 @@
                     ${r[5] ? `<div class="bg-green-50 p-4 rounded-xl border border-green-100"><p class="text-sm font-black text-green-700 uppercase"><i class="fas fa-user-tie mr-2"></i> Trainer: ${r[5]}</p></div>` : ''}
                 </div>`).join('');
 
-            // Render Archivio
             const listArch = document.getElementById('lista-archivio');
             const arch = db.richieste.filter(r => r[4] === 'ASSEGNATA' && parseD(r[1]) < oggi).sort((a,b) => parseD(b[1]) - parseD(a[1]));
             listArch.innerHTML = arch.map(r => `
-                <tr class="hover:bg-slate-50">
+                <tr class="hover:bg-slate-50 font-bold">
                     <td class="p-6">${fixD(r[1])}</td>
                     <td class="p-6 uppercase">${r[3]}</td>
                     <td class="p-6 text-slate-500">${r[5]}</td>
                     <td class="p-6 font-black text-red-600">${r[6] || '---'}</td>
                 </tr>`).join('');
 
-            // Render Staff
             const gridStaff = document.getElementById('grid-staff');
             gridStaff.innerHTML = db.anagrafica.filter(a => a[0] && a[1] && a[0] !== "RUOLO").map(a => `
                 <div class="bg-white p-6 rounded-3xl border-2 border-slate-100 flex justify-between items-center shadow-sm">
                     <div>
                         <p class="text-[10px] font-black uppercase tracking-widest ${a[0]==='TRAINER'?'text-green-600':'text-blue-600'}">${a[0]}</p>
                         <h5 class="text-xl font-black uppercase text-slate-800">${a[1]}</h5>
-                        <p class="text-xs font-bold text-slate-400">Patente ${a[3] || 'N.D.'}</p>
+                        <p class="text-xs font-bold text-slate-400">Patente ${a[3] || '---'}</p>
                     </div>
-                    <button onclick="delPersona('${a[1]}')" class="w-12 h-12 rounded-xl bg-slate-50 text-slate-300 hover:bg-red-50 hover:text-red-600 transition flex items-center justify-center">
+                    <button onclick="delPersona('${a[1]}')" class="w-12 h-12 rounded-xl bg-slate-50 text-slate-200 hover:text-red-600 transition flex items-center justify-center">
                         <i class="fas fa-user-minus"></i>
                     </button>
                 </div>`).join('');
 
-            // Render Mezzi
-            document.getElementById('lista-mezzi').innerHTML = db.veicoli.map(v => `<div class="bg-white border-4 border-slate-100 px-8 py-4 rounded-3xl font-black text-2xl uppercase shadow-md">${v[0]}</div>`).join('');
+            document.getElementById('lista-mezzi').innerHTML = db.veicoli.map(v => `<div class="bg-white border-4 border-slate-100 px-8 py-4 rounded-3xl font-black text-2xl uppercase shadow-sm">${v[0]}</div>`).join('');
         }
 
         async function salvaTarga(id, val) {
@@ -220,7 +230,7 @@
 
         async function addPersona() {
             const r = document.getElementById('add-ruolo').value, n = document.getElementById('add-nome').value.trim().toUpperCase(), e = document.getElementById('add-email').value.trim(), c = document.getElementById('add-cat').value;
-            if(!n) return alert("Manca il nome!");
+            if(!n) return alert("Inserire il nome!");
             await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ADD_PERSONA", ruolo: r, nome: n, email: e, cat: c }) });
             location.reload();
         }
@@ -231,8 +241,8 @@
             location.reload();
         }
 
-        async function delGuida(id) { if(confirm("Cancellare la guida?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); init(); } }
-        async function delPersona(n) { if(confirm("Eliminare profilo?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: n }) }); init(); } }
+        async function delGuida(id) { if(confirm("Cancellare definitivamente la guida?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); init(); } }
+        async function delPersona(n) { if(confirm("Eliminare profilo staff/allievo?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: n }) }); init(); } }
 
         function switchTab(t) {
             ['guide','archivio','staff','mezzi'].forEach(s => {
@@ -243,8 +253,8 @@
 
         function filterStatus(s) {
             currentFilter = s;
-            document.getElementById('f-aperta').classList.toggle('bg-white', s === 'APERTA');
-            document.getElementById('f-assegnata').classList.toggle('bg-white', s === 'ASSEGNATA');
+            document.getElementById('f-aperta').classList.toggle('filter-active', s === 'APERTA');
+            document.getElementById('f-assegnata').classList.toggle('filter-active', s === 'ASSEGNATA');
             renderAll();
         }
 
@@ -253,10 +263,10 @@
             db.richieste.filter(r => r[4] === 'ASSEGNATA').forEach(r => {
                 csv += `${fixD(r[1])};${r[2]};${r[3]};${r[5]};${r[6]}\n`;
             });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            link.setAttribute("href", URL.createObjectURL(blob));
-            link.setAttribute("download", "report_guide_CRI.csv");
+            link.href = URL.createObjectURL(blob);
+            link.download = "report_CRI_Gallarate.csv";
             link.click();
         }
 
