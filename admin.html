@@ -11,21 +11,24 @@
         body { font-family: 'Outfit', sans-serif; background-color: #f1f5f9; color: #1e293b; }
         .tab-active { border-bottom: 4px solid #ed1c24; color: #ed1c24; font-weight: 900; }
         .hidden { display: none; }
-        .card { background: white; border-radius: 1.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+        .card { background: white; border-radius: 1.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.6); }
     </style>
 </head>
 <body class="pb-20">
     <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b p-4 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-4"><img src="logo.png" class="w-14 h-auto" onerror="this.style.display='none'"><div><h1 class="text-xl font-black uppercase leading-none">Pannello <span class="text-red-600">Admin</span></h1></div></div>
+        <div class="flex items-center gap-4">
+            <img src="logo.png" class="w-14 h-auto" onerror="this.style.display='none'">
+            <div><h1 class="text-xl font-black uppercase leading-none">Pannello <span class="text-red-600">Admin</span></h1></div>
+        </div>
         <div class="flex gap-2">
             <button onclick="generaRecapWA()" class="bg-green-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase flex items-center gap-2 shadow-lg hover:bg-green-700 transition"><i class="fab fa-whatsapp"></i> Recap WA</button>
-            <button onclick="init()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500"><i id="sync-icon" class="fas fa-sync-alt"></i></button>
+            <button onclick="init()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:text-red-600 transition"><i id="sync-icon" class="fas fa-sync-alt"></i></button>
         </div>
     </header>
 
     <nav class="bg-white border-b px-4 mb-6 flex gap-8">
-        <button onclick="switchTab('guide')" id="t-guide" class="py-4 text-xs uppercase tracking-widest tab-active">Guide</button>
-        <button onclick="switchTab('staff')" id="t-staff" class="py-4 text-xs uppercase tracking-widest text-slate-400 font-bold">Anagrafica</button>
+        <button onclick="switchTab('guide')" id="t-guide" class="py-4 text-xs uppercase tracking-widest tab-active">Gestione Guide</button>
+        <button onclick="switchTab('staff')" id="t-staff" class="py-4 text-xs uppercase tracking-widest text-slate-400 font-bold">Anagrafica Staff</button>
     </nav>
 
     <main class="p-4 max-w-4xl mx-auto">
@@ -39,14 +42,31 @@
 
         <div id="sec-staff" class="hidden space-y-6">
             <div class="card p-6 border-l-8 border-red-600">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <select id="add-ruolo" class="p-3 bg-slate-50 rounded-xl font-bold border-none shadow-inner"><option value="DISCENTE">DISCENTE</option><option value="TRAINER">TRAINER</option><option value="RESPONSABILE">RESPONSABILE</option></select>
+                <h3 class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">Aggiungi Nuovo Membro</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <select id="add-ruolo" class="p-3 bg-slate-50 rounded-xl font-bold border-none shadow-inner">
+                        <option value="DISCENTE">DISCENTE</option>
+                        <option value="TRAINER">TRAINER</option>
+                        <option value="RESPONSABILE">RESPONSABILE</option>
+                    </select>
                     <input type="text" id="add-nome" placeholder="COGNOME NOME" class="p-3 bg-slate-50 rounded-xl font-bold uppercase shadow-inner">
                     <input type="email" id="add-email" placeholder="EMAIL" class="p-3 bg-slate-50 rounded-xl font-bold shadow-inner">
-                    <button onclick="addPersona()" class="bg-red-600 text-white font-black py-3 rounded-xl uppercase text-xs">Aggiungi</button>
+                    <select id="add-cat" class="p-3 bg-slate-50 rounded-xl font-bold border-none shadow-inner">
+                        <option value="">PATENTE</option>
+                        <option value="4">CAT. 4</option>
+                        <option value="5">CAT. 5</option>
+                    </select>
+                    <button onclick="addPersona()" class="bg-red-600 text-white font-black py-3 rounded-xl uppercase text-xs hover:bg-red-700 transition shadow-lg shadow-red-100">Aggiungi</button>
                 </div>
             </div>
-            <div class="card overflow-hidden"><table class="w-full text-left text-xs"><tbody id="lista-staff" class="divide-y divide-slate-100"></tbody></table></div>
+            <div class="card overflow-hidden">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 border-b font-black text-slate-400 uppercase">
+                        <tr><th class="p-4">Ruolo</th><th class="p-4">Nome</th><th class="p-4">Pat.</th><th class="p-4">Azioni</th></tr>
+                    </thead>
+                    <tbody id="lista-staff" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
         </div>
     </main>
 
@@ -59,23 +79,28 @@
             document.getElementById('sync-icon').classList.add('fa-spin');
             try {
                 const r = await fetch(API); const d = await r.json();
-                db.anagrafica = d.anagrafica || []; db.richieste = d.richieste || [];
+                db.anagrafica = d.anagrafica || []; 
+                db.richieste = d.richieste || [];
                 renderGuide(); renderStaff();
             } catch (e) { alert("Errore connessione."); }
             document.getElementById('sync-icon').classList.remove('fa-spin');
         }
 
-        function fixD(s) { 
-            if(!s || s === "Data") return "";
+        function parseD(s) { 
+            if(!s || s === "Data") return new Date(2099,1,1);
             let p = s.split('T')[0].split(/[-/]/);
-            let y = p[0].length === 4 ? p[0] : p[2], m = p[1], d = p[0].length === 4 ? p[2] : p[0];
-            return `${d}-${m}-${y}`;
+            return new Date(p[0].length===4?p[0]:p[2], p[1]-1, p[0].length===4?p[2]:p[0], 12, 0, 0); 
+        }
+
+        function fixD(s) { 
+            const d = parseD(s);
+            if(d.getFullYear() === 2099) return "N.D.";
+            return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
         }
 
         function generaRecapWA() {
-            const conf = db.richieste.filter(r => r[4] === 'ASSEGNATA' && r[0] !== "ID");
+            const conf = db.richieste.filter(r => r[4] === 'ASSEGNATA' && r[0] !== "ID").sort((a,b) => parseD(a[1]) - parseD(b[1]));
             if (conf.length === 0) return alert("Nessuna guida confermata.");
-            conf.sort((a,b) => new Date(a[1]) - new Date(b[1]));
             let m = "🚗 *RIEPILOGO GUIDE CONFERMATE*\n";
             let ud = "";
             conf.forEach(r => {
@@ -88,43 +113,57 @@
 
         function renderGuide() {
             const container = document.getElementById('lista-guide');
-            const filtered = db.richieste.filter(r => r[4] === currentFilter && r[0] !== "ID" && r[3]);
+            // FILTRO E ORDINAMENTO PER DATA
+            const filtered = db.richieste
+                .filter(r => r[4] === currentFilter && r[0] !== "ID" && r[3])
+                .sort((a,b) => parseD(a[1]) - parseD(b[1]));
+
+            if(filtered.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-center py-10 font-bold text-slate-400 uppercase text-xs">Nessuna guida in questa categoria</p>`;
+                return;
+            }
+
             container.innerHTML = filtered.map(r => `
-                <div class="card p-5 space-y-4">
+                <div class="card p-5 space-y-4 border-l-4 ${currentFilter === 'ASSEGNATA' ? 'border-green-500' : 'border-orange-400'}">
                     <div class="flex justify-between items-start">
-                        <div><p class="text-[12px] font-black text-red-600 uppercase">${fixD(r[1])}</p><h4 class="font-black text-slate-800 uppercase text-lg leading-tight tracking-tighter">${r[3]}</h4><p class="text-xs font-bold text-slate-400 mt-1">Ore: ${r[2]}</p></div>
-                        <button onclick="delGuida('${r[0]}')" class="text-slate-300 hover:text-red-600 transition p-2"><i class="fas fa-trash"></i></button>
+                        <div>
+                            <p class="text-[12px] font-black text-red-600 uppercase mb-1"><i class="far fa-calendar-alt mr-1"></i> ${fixD(r[1])}</p>
+                            <h4 class="font-black text-slate-800 uppercase text-lg leading-none tracking-tighter">${r[3]}</h4>
+                            <p class="text-xs font-bold text-slate-500 mt-2"><i class="far fa-clock mr-1"></i> Ore: ${r[2]}</p>
+                        </div>
+                        <button onclick="delGuida('${r[0]}')" class="text-slate-300 hover:text-red-600 transition p-2"><i class="fas fa-trash-alt"></i></button>
                     </div>
                     <div class="pt-3 border-t flex items-center gap-2">
-                        <input id="targa-${r[0]}" type="text" value="${r[6] || ''}" placeholder="Targa..." class="flex-1 text-xs font-black uppercase py-2 px-3 bg-slate-50 rounded-lg outline-none">
-                        <button onclick="salvaTarga('${r[0]}')" class="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center hover:bg-green-600 shadow-md"><i class="fas fa-save"></i></button>
+                        <input id="targa-${r[0]}" type="text" value="${r[6] || ''}" placeholder="Targa mezzo..." class="flex-1 text-xs font-black uppercase py-2 px-3 bg-slate-50 rounded-lg border-none shadow-inner outline-none focus:ring-1 focus:ring-red-500">
+                        <button onclick="salvaTarga('${r[0]}')" class="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center hover:bg-green-600 shadow-md transition"><i class="fas fa-save"></i></button>
                     </div>
-                    ${r[5] ? `<p class="text-[10px] font-black text-green-600 uppercase italic">Trainer: ${r[5]}</p>` : ''}
-                </div>`).reverse().join('');
-        }
-
-        async function salvaTarga(id) {
-            const val = document.getElementById('targa-'+id).value.toUpperCase();
-            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val }) });
-            alert("Salvato!");
-        }
-
-        async function delGuida(id) {
-            if(confirm("Cancellare?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); init(); }
+                    ${r[5] ? `<p class="text-[10px] font-black text-green-600 uppercase italic"><i class="fas fa-user-tie mr-1"></i> Trainer: ${r[5]}</p>` : ''}
+                </div>`).join('');
         }
 
         function renderStaff() {
             const container = document.getElementById('lista-staff');
-            container.innerHTML = db.anagrafica.filter(a => a[0] && a[1]).map(a => `<tr class="hover:bg-slate-50 font-bold border-b"><td class="p-4 uppercase text-[9px] ${a[0] === 'TRAINER' ? 'text-green-600' : 'text-blue-600'}">${a[0]}</td><td class="p-4 uppercase text-xs">${a[1]}</td><td class="p-4 text-center"><button onclick="delPersona('${a[1]}')" class="text-red-300 transition"><i class="fas fa-user-minus"></i></button></td></tr>`).join('');
+            container.innerHTML = db.anagrafica.filter(a => a[0] !== "RUOLO" && a[0] && a[1]).map(a => `
+                <tr class="hover:bg-slate-50 transition font-bold">
+                    <td class="p-4 uppercase text-[9px] ${a[0] === 'TRAINER' ? 'text-green-600' : 'text-blue-600'}">${a[0]}</td>
+                    <td class="p-4 uppercase text-xs text-slate-800">${a[1]}<br><span class="text-[9px] text-slate-400 font-normal">${a[2]}</span></td>
+                    <td class="p-4 text-xs font-black text-red-600">${a[3] ? 'PAT ' + a[3] : '---'}</td>
+                    <td class="p-4 text-center"><button onclick="delPersona('${a[1]}')" class="text-red-300 hover:text-red-500 transition"><i class="fas fa-user-minus"></i></button></td>
+                </tr>`).join('');
         }
 
         async function addPersona() {
-            const r = document.getElementById('add-ruolo').value, n = document.getElementById('add-nome').value.trim().toUpperCase(), e = document.getElementById('add-email').value.trim();
+            const r = document.getElementById('add-ruolo').value, n = document.getElementById('add-nome').value.trim().toUpperCase(), e = document.getElementById('add-email').value.trim(), c = document.getElementById('add-cat').value;
             if(!n) return alert("Manca il nome!");
-            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ADD_PERSONA", ruolo: r, nome: n, email: e, cat: "" }) }); location.reload();
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ADD_PERSONA", ruolo: r, nome: n, email: e, cat: c }) }); location.reload();
         }
 
         async function delPersona(n) { if(confirm("Rimuovere?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: n }) }); init(); } }
+        async function salvaTarga(id) {
+            const val = document.getElementById('targa-'+id).value.toUpperCase();
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val }) }); alert("Salvato!");
+        }
+        async function delGuida(id) { if(confirm("Cancellare?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); init(); } }
         function switchTab(t) { document.getElementById('sec-guide').classList.toggle('hidden', t !== 'guide'); document.getElementById('sec-staff').classList.toggle('hidden', t !== 'staff'); document.getElementById('t-guide').classList.toggle('tab-active', t === 'guide'); document.getElementById('t-staff').classList.toggle('tab-active', t === 'staff'); }
         function filterStatus(s) { currentFilter = s; document.getElementById('f-aperta').classList.toggle('bg-white', s === 'APERTA'); document.getElementById('f-assegnata').classList.toggle('bg-white', s === 'ASSEGNATA'); renderGuide(); }
         window.onload = init;
