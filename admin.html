@@ -66,20 +66,20 @@
             document.getElementById('sync-icon').classList.add('fa-spin');
             try {
                 const r = await fetch(API);
-                if (!r.ok) throw new Error();
-                db = await r.json();
+                const data = await r.json();
+                db.anagrafica = data.anagrafica || [];
+                db.richieste = data.richieste || [];
                 renderGuide();
                 renderStaff();
             } catch (e) { 
-                console.error(e);
-                alert("Errore di connessione o dati mancanti nel foglio Excel."); 
+                console.error("Errore Boot:", e);
+                alert("Errore di caricamento. Verifica la connessione."); 
             }
             document.getElementById('sync-icon').classList.remove('fa-spin');
         }
 
-        // Sistema di protezione per date e celle vuote
         function parseD(s) { 
-            if(!s || typeof s !== 'string') return new Date();
+            if(!s || typeof s !== 'string' || s === "Data") return new Date();
             let p = s.split('T')[0].split(/[-/]/); 
             if(p.length < 3) return new Date();
             return new Date(p[0].length===4?p[0]:p[2], p[1]-1, p[0].length===4?p[2]:p[0], 12, 0, 0); 
@@ -108,16 +108,16 @@
 
         function renderGuide() {
             const container = document.getElementById('lista-guide');
-            const filtered = db.richieste.filter(r => r[4] === currentFilter && r[0] !== "ID" && r[3] !== "");
+            const filtered = db.richieste.filter(r => r[4] === currentFilter && r[0] !== "ID" && r[3]);
             container.innerHTML = filtered.map(r => `
                 <div class="card p-5 space-y-4">
                     <div class="flex justify-between items-start">
-                        <div><p class="text-[12px] font-black text-red-600 uppercase">${fixD(r[1])}</p><h4 class="font-black text-slate-800 uppercase text-lg leading-none tracking-tighter">${r[3]}</h4><p class="text-xs font-bold text-slate-400 mt-1">Orario: ${r[2]}</p></div>
+                        <div><p class="text-[12px] font-black text-red-600 uppercase">${fixD(r[1])}</p><h4 class="font-black text-slate-800 uppercase text-lg leading-tight">${r[3]}</h4><p class="text-xs font-bold text-slate-400 mt-1">Orario: ${r[2]}</p></div>
                         <button onclick="delGuida('${r[0]}')" class="text-slate-300 hover:text-red-600 transition p-2"><i class="fas fa-trash"></i></button>
                     </div>
                     <div class="pt-3 border-t flex items-center gap-2">
-                        <input id="targa-${r[0]}" type="text" value="${r[6] || ''}" placeholder="Targa mezzo..." class="flex-1 text-xs font-black uppercase py-2 px-3 bg-slate-50 rounded-lg outline-none shadow-inner">
-                        <button onclick="salvaTarga('${r[0]}')" class="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center hover:bg-green-600 shadow-md transition"><i class="fas fa-save"></i></button>
+                        <input id="targa-${r[0]}" type="text" value="${r[6] || ''}" placeholder="Targa..." class="flex-1 text-xs font-black uppercase py-2 px-3 bg-slate-50 rounded-lg outline-none shadow-inner">
+                        <button onclick="salvaTarga('${r[0]}')" class="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center hover:bg-green-600 shadow-md"><i class="fas fa-save"></i></button>
                     </div>
                     ${r[5] ? `<p class="text-[10px] font-black text-green-600 uppercase italic">Trainer: ${r[5]}</p>` : ''}
                 </div>
@@ -126,22 +126,17 @@
 
         async function salvaTarga(id) {
             const val = document.getElementById('targa-'+id).value.toUpperCase();
-            try { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val }) }); alert("Targa salvata!"); } catch(e) { alert("Errore salvataggio."); }
+            try { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val }) }); alert("Targa salvata!"); } catch(e) { alert("Errore."); }
         }
 
         async function delGuida(id) {
-            if(!confirm("Cancellare questa guida? Verranno riaperti gli altri slot orari dell'allievo.")) return;
+            if(!confirm("Cancellare questa guida?")) return;
             await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); init();
         }
 
         function renderStaff() {
             const container = document.getElementById('lista-staff');
-            container.innerHTML = db.anagrafica.filter(a => a[0] !== "RUOLO" && a[0] !== "" && a[1] !== "").map(a => `
-                <tr class="hover:bg-slate-50 transition font-bold border-b">
-                    <td class="p-4 uppercase text-[9px] tracking-widest ${a[0] === 'TRAINER' ? 'text-green-600' : 'text-blue-600'}">${a[0]}</td>
-                    <td class="p-4 uppercase text-xs">${a[1]}</td>
-                    <td class="p-4 text-center"><button onclick="delPersona('${a[1]}')" class="text-red-300 hover:text-red-500 transition"><i class="fas fa-user-minus"></i></button></td>
-                </tr>`).join('');
+            container.innerHTML = db.anagrafica.filter(a => a[0] !== "RUOLO" && a[0] && a[1]).map(a => `<tr class="hover:bg-slate-50 transition font-bold border-b"><td class="p-4 uppercase text-[9px] ${a[0] === 'TRAINER' ? 'text-green-600' : 'text-blue-600'}">${a[0]}</td><td class="p-4 uppercase text-xs">${a[1]}</td><td class="p-4 text-center"><button onclick="delPersona('${a[1]}')" class="text-red-300 hover:text-red-500 transition"><i class="fas fa-user-minus"></i></button></td></tr>`).join('');
         }
 
         async function addPersona() {
