@@ -10,8 +10,8 @@
     <style>body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; }</style>
 </head>
 <body class="pb-10">
-    <header class="bg-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center border-b-2 border-slate-100">
-        <div class="flex items-center gap-3"><img src="logo.png" class="h-12 w-auto" onerror="this.style.display='none'"><h1 class="text-lg font-black uppercase text-slate-800">Area <span class="text-blue-600">Allievi</span></h1></div>
+    <header class="bg-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center">
+        <div class="flex items-center gap-3"><img src="logo.png" class="h-12 w-auto" onerror="this.style.display='none'"><h1 class="text-lg font-black uppercase">Area <span class="text-blue-600">Allievi</span></h1></div>
         <div id="loading" class="hidden animate-spin text-blue-600"><i class="fas fa-spinner"></i></div>
     </header>
 
@@ -23,95 +23,72 @@
         </div>
 
         <section class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100">
-            <h2 class="text-xl font-black mb-6 uppercase italic text-center">Inoltra Disponibilità</h2>
             <div class="space-y-4">
-                <div>
-                    <label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Chi sei?</label>
-                    <select id="all-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner">
-                        <option value="">Caricamento nomi...</option>
-                    </select>
-                </div>
-                <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Giorno</label><input type="date" id="all-data" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner"></div>
+                <select id="all-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner"></select>
+                <input type="date" id="all-data" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner">
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Dalle</label><input type="time" id="all-inizio" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner"></div>
-                    <div><label class="font-bold text-[10px] uppercase ml-2 text-slate-400">Alle</label><input type="time" id="all-fine" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner"></div>
+                    <input type="time" id="all-inizio" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner">
+                    <input type="time" id="all-fine" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner">
                 </div>
-                <button id="btn-inoltra" onclick="inoltra()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase shadow-lg active:scale-95 transition">Inoltra Proposta</button>
+                <button onclick="inoltra()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase shadow-lg active:scale-95 transition">Inoltra Proposta</button>
             </div>
         </section>
         <div id="mie-guide" class="space-y-3"></div>
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbwqsrhXnGNkAj3FDBs6TqPoNb5eVPkv72yAu528YeYK0oiawFFtflx_9g_7JBgBTfwf/exec";
+        const API = "https://script.google.com/macros/s/AKfycbx-uPuEAgD1T1FpXFCz7wGdWULbhu12Z6Fwi47GUm-IjwOrl7aljcBLmHyQkP8vpe7M/exec";
         let db = { anagrafica: [], richieste: [] };
 
-        async function init() {
+        async function load() {
             document.getElementById('loading').classList.remove('hidden');
             try {
-                const r = await fetch(API);
-                db = await r.json();
-                
-                const select = document.getElementById('all-nome');
-                // Colonna A (Ruolo) = indice 0, Colonna B (Nome) = indice 1
+                const r = await fetch(API); db = await r.json();
                 const discenti = db.anagrafica.filter(x => x[0] && x[0].toString().trim().toUpperCase() === 'DISCENTE');
-                
-                if (discenti.length === 0) {
-                    select.innerHTML = '<option value="">ERRORE: Nessun Discente trovato</option>';
-                } else {
-                    select.innerHTML = '<option value="">-- Seleziona il tuo nome --</option>' + 
-                        discenti.map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
-                }
+                document.getElementById('all-nome').innerHTML = '<option value="">-- Seleziona Nome --</option>' + discenti.map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
                 updateView();
-            } catch(e) { alert("Errore connessione Allievi: " + e); }
+            } catch(e) { alert("Errore connessione."); }
             document.getElementById('loading').classList.add('hidden');
         }
 
-        function fixD(s) {
-            if(!s || s === "Data") return "N.D.";
+        function fixD(s) { 
+            if(!s || s === "Data") return "";
             let p = s.split('T')[0].split(/[-/]/);
-            let y = p[0].length === 4 ? p[0] : p[2];
-            let m = p[1];
-            let d = p[0].length === 4 ? p[2] : p[0];
-            return d + "-" + m + "-" + y;
+            let y = p[0].length === 4 ? p[0] : p[2], m = p[1], d = p[0].length === 4 ? p[2] : p[0];
+            return `${d}-${m}-${y}`;
         }
 
         function updateView() {
-            const nome = document.getElementById('all-nome').value;
-            if(!nome) return;
+            const nome = document.getElementById('all-nome').value; if(!nome) return;
             document.getElementById('dashboard-allievo').classList.remove('hidden');
             const info = db.anagrafica.find(x => x[1] === nome);
-            const cat = info ? info[3] : "4";
-            const max = cat === "5" ? 6 : 4;
+            const max = (info && info[3] === "5") ? 6 : 4;
             const oggi = new Date(); oggi.setHours(0,0,0,0);
             const assegnate = db.richieste.filter(r => r[3] === nome && r[4] === 'ASSEGNATA');
-            let fatte = 0, prenotate = 0;
-            assegnate.forEach(r => {
+            let fatte = 0, pren = 0;
+            assegnate.forEach(r => { 
                 let p = r[1].split(/[-/]/);
                 let dG = new Date(p[0].length===4?p[0]:p[2], p[1]-1, p[0].length===4?p[2]:p[0]);
-                if (dG < oggi) fatte++; else prenotate++;
+                if (dG < oggi) fatte++; else pren++; 
             });
-            document.getElementById('stat-prenotate').innerText = prenotate;
+            document.getElementById('stat-prenotate').innerText = pren;
             document.getElementById('stat-fatte').innerText = fatte;
-            document.getElementById('stat-residue').innerText = Math.max(0, max - (fatte + prenotate));
+            document.getElementById('stat-residue').innerText = Math.max(0, max - (fatte + pren));
             
             const mie = db.richieste.filter(r => r[3] === nome && (r[4]==='ASSEGNATA' || r[4]==='APERTA'));
             document.getElementById('mie-guide').innerHTML = mie.map(r => `
                 <div class="bg-white p-5 rounded-2xl shadow-sm border flex justify-between items-center">
-                    <div><p class="text-[14px] font-black text-red-600 mb-0.5">${fixD(r[1])}</p>
-                    <p class="font-bold uppercase text-[11px] text-slate-800">ORE ${r[2]} - ${r[4]}</p></div>
+                    <div><p class="text-[14px] font-black text-red-600 mb-0.5">${fixD(r[1])}</p><p class="font-bold uppercase text-[11px] text-slate-800">ORE ${r[2]} - ${r[4]}</p></div>
                 </div>`).reverse().join('');
         }
 
         async function inoltra() {
-            const nome = document.getElementById('all-nome').value;
-            if(!nome) return alert("Seleziona chi sei!");
-            const d = { azione: "INOLTRA", allievo: nome, giorno: document.getElementById('all-data').value, oraInizio: document.getElementById('all-inizio').value, oraFine: document.getElementById('all-fine').value };
+            const n = document.getElementById('all-nome').value; if(!n) return alert("Seleziona chi sei!");
             document.getElementById('loading').classList.remove('hidden');
-            await fetch(API, { method: 'POST', body: JSON.stringify(d) });
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "INOLTRA", allievo: n, giorno: document.getElementById('all-data').value, oraInizio: document.getElementById('all-inizio').value, oraFine: document.getElementById('all-fine').value }) });
             location.reload();
         }
-        window.onload = init;
+        window.onload = load;
     </script>
 </body>
 </html>
