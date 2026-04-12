@@ -3,103 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CRI Admin Pro</title>
+    <title>CRI Admin - High Visibility</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Outfit', sans-serif; background: #f1f5f9; }
-        .tab-active { border-bottom: 4px solid #ed1c24; color: #ed1c24; font-weight: 900; }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background-color: #f8fafc; 
+            color: #0f172a;
+            font-size: 18px; /* Base font aumentata */
+        }
+        .tab-active { 
+            background-color: #ed1c24; 
+            color: white !important; 
+            box-shadow: 0 10px 15px -3px rgba(237, 28, 36, 0.3);
+        }
         .hidden { display: none; }
+        .card-admin { 
+            background: white; 
+            border-radius: 2rem; 
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        .card-admin:hover { border-color: #ed1c24; }
+        input, select { font-size: 1.1rem !important; }
+        
+        /* Scrollbar pulita */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="pb-20">
-    <header class="bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-50">
-        <h1 class="font-black uppercase text-red-600">Admin Pro</h1>
-        <div class="flex gap-2">
-            <button onclick="esportaCSV()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase"><i class="fas fa-file-export"></i> CSV</button>
-            <button onclick="init()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center"><i id="sync" class="fas fa-sync"></i></button>
+
+    <header class="bg-white border-b-4 border-red-600 sticky top-0 z-50 px-6 py-5 shadow-sm">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-6">
+                <img src="logo.png" class="h-20 w-auto" onerror="this.style.display='none'">
+                <div>
+                    <h1 class="text-3xl font-black uppercase tracking-tighter">Gestione <span class="text-red-600">Patenti</span></h1>
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">CRI Gallarate - Pannello di Controllo</p>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="esportaCSV()" class="bg-slate-800 text-white px-6 py-3 rounded-2xl font-black uppercase text-sm flex items-center gap-2 hover:bg-black transition">
+                    <i class="fas fa-file-csv text-lg"></i> Esporta dati
+                </button>
+                <button onclick="init()" class="w-14 h-14 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center hover:bg-red-600 hover:text-white transition">
+                    <i id="sync" class="fas fa-sync-alt text-xl"></i>
+                </button>
+            </div>
         </div>
     </header>
 
-    <nav class="bg-white border-b px-4 mb-6 flex gap-4 overflow-x-auto no-scrollbar">
-        <button onclick="switchTab('guide')" id="t-guide" class="py-4 text-[10px] uppercase font-bold tab-active">Guide</button>
-        <button onclick="switchTab('archivio')" id="t-archivio" class="py-4 text-[10px] uppercase font-bold text-slate-400">Archivio</button>
-        <button onclick="switchTab('staff')" id="t-staff" class="py-4 text-[10px] uppercase font-bold text-slate-400">Staff</button>
-        <button onclick="switchTab('mezzi')" id="t-mezzi" class="py-4 text-[10px] uppercase font-bold text-slate-400">Mezzi</button>
+    <nav class="max-w-7xl mx-auto px-6 py-8">
+        <div class="flex flex-wrap gap-4">
+            <button onclick="switchTab('guide')" id="t-guide" class="px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-slate-400 bg-white border-2 border-slate-100 transition-all tab-active">
+                <i class="fas fa-calendar-check mr-2"></i> Guide Attive
+            </button>
+            <button onclick="switchTab('archivio')" id="t-archivio" class="px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-slate-400 bg-white border-2 border-slate-100 transition-all">
+                <i class="fas fa-archive mr-2"></i> Archivio
+            </button>
+            <button onclick="switchTab('staff')" id="t-staff" class="px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-slate-400 bg-white border-2 border-slate-100 transition-all">
+                <i class="fas fa-users mr-2"></i> Staff & Allievi
+            </button>
+            <button onclick="switchTab('mezzi')" id="t-mezzi" class="px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-slate-400 bg-white border-2 border-slate-100 transition-all">
+                <i class="fas fa-ambulance mr-2"></i> Parco Mezzi
+            </button>
+        </div>
     </nav>
 
-    <main class="p-4 max-w-4xl mx-auto">
-        <div id="sec-guide" class="space-y-4">
-            <div id="lista-guide" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    <main class="max-w-7xl mx-auto px-6">
+        
+        <div id="sec-guide" class="space-y-8">
+            <div class="flex items-center gap-4 mb-8">
+                <button onclick="filterStatus('APERTA')" id="f-aperta" class="px-6 py-2 rounded-xl font-black text-sm uppercase bg-white border-2 border-slate-200">In Attesa</button>
+                <button onclick="filterStatus('ASSEGNATA')" id="f-assegnata" class="px-6 py-2 rounded-xl font-black text-sm uppercase bg-slate-200 text-slate-600">Confermate</button>
+            </div>
+            <div id="lista-guide" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8"></div>
         </div>
 
-        <div id="sec-archivio" class="hidden space-y-4">
-            <h3 class="text-center font-black uppercase text-xs text-slate-400">Storico Guide Effettuate</h3>
-            <div id="lista-archivio" class="space-y-2"></div>
+        <div id="sec-archivio" class="hidden">
+            <div class="bg-white rounded-[2.5rem] shadow-sm border-2 border-slate-100 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 border-b-2">
+                        <tr class="text-slate-400 font-black uppercase text-sm">
+                            <th class="p-6">Data</th>
+                            <th class="p-6">Allievo</th>
+                            <th class="p-6">Istruttore</th>
+                            <th class="p-6">Mezzo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-archivio" class="divide-y text-lg font-bold"></tbody>
+                </table>
+            </div>
         </div>
 
-        <div id="sec-staff" class="hidden space-y-4">
-            <div class="bg-white p-6 rounded-3xl border">
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-5">
-                    <select id="add-ruolo" class="p-3 bg-slate-50 rounded-xl font-bold border-none shadow-inner"><option value="DISCENTE">DISCENTE</option><option value="TRAINER">TRAINER</option></select>
-                    <input type="text" id="add-nome" placeholder="Nome Cognome" class="p-3 bg-slate-50 rounded-xl font-bold shadow-inner">
-                    <input type="email" id="add-email" placeholder="Email" class="p-3 bg-slate-50 rounded-xl font-bold shadow-inner">
-                    <select id="add-cat" class="p-3 bg-slate-50 rounded-xl font-bold border-none shadow-inner"><option value="4">CAT. 4</option><option value="5">CAT. 5</option></select>
-                    <button onclick="addPersona()" class="bg-red-600 text-white font-black py-3 rounded-xl uppercase text-xs">Aggiungi</button>
+        <div id="sec-staff" class="hidden space-y-10">
+            <div class="bg-white p-10 rounded-[3rem] border-4 border-slate-100 shadow-2xl">
+                <h2 class="text-2xl font-black mb-8 uppercase tracking-tighter">Inserimento Nuovo Profilo</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                    <select id="add-ruolo" class="p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold outline-none focus:border-red-600">
+                        <option value="DISCENTE">DISCENTE</option>
+                        <option value="TRAINER">TRAINER</option>
+                        <option value="RESPONSABILE">ADMIN</option>
+                    </select>
+                    <input type="text" id="add-nome" placeholder="COGNOME NOME" class="p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold uppercase outline-none focus:border-red-600">
+                    <input type="email" id="add-email" placeholder="EMAIL" class="p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold outline-none focus:border-red-600">
+                    <select id="add-cat" class="p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold outline-none focus:border-red-600">
+                        <option value="4">PATENTE 4</option>
+                        <option value="5">PATENTE 5</option>
+                    </select>
+                    <button onclick="addPersona()" class="bg-red-600 text-white font-black p-5 rounded-2xl uppercase shadow-lg hover:scale-105 transition">Aggiungi</button>
                 </div>
             </div>
-            <div id="lista-staff" class="bg-white rounded-3xl overflow-hidden shadow-sm"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-staff"></div>
         </div>
 
-        <div id="sec-mezzi" class="hidden space-y-4 text-center">
-            <div class="bg-white p-6 rounded-3xl border flex gap-3">
-                <input type="text" id="add-targa" placeholder="Targa (es. CRI 1234)" class="flex-1 p-3 bg-slate-50 rounded-xl font-bold shadow-inner uppercase">
-                <button onclick="addMezzo()" class="bg-slate-900 text-white font-black px-6 py-3 rounded-xl uppercase text-xs">Salva</button>
+        <div id="sec-mezzi" class="hidden space-y-10">
+            <div class="bg-white p-10 rounded-[3rem] border-4 border-slate-100 shadow-xl max-w-2xl mx-auto text-center">
+                <h2 class="text-2xl font-black mb-6 uppercase">Aggiungi Mezzo</h2>
+                <div class="flex gap-4">
+                    <input type="text" id="add-targa" placeholder="TARGA (ES. CRI 1234)" class="flex-1 p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold uppercase text-center outline-none">
+                    <button onclick="addMezzo()" class="bg-slate-900 text-white font-black px-10 rounded-2xl uppercase">Salva</button>
+                </div>
             </div>
-            <div id="lista-mezzi" class="flex flex-wrap gap-2 justify-center"></div>
+            <div id="lista-mezzi" class="flex flex-wrap gap-4 justify-center"></div>
         </div>
+
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbzYeHgRqZk3hcb7A1yqBlb8mBZVNgtDupl0KDzX7LFXsjM-JuevQPnUtye74kM9ZtJU/exec";
-        let db = {};
+        const API = "https://script.google.com/macros/s/AKfycbx-uPuEAgD1T1FpXFCz7wGdWULbhu12Z6Fwi47GUm-IjwOrl7aljcBLmHyQkP8vpe7M/exec";
+        let db = { anagrafica: [], richieste: [], veicoli: [] };
+        let currentFilter = 'APERTA';
 
         async function init() {
             document.getElementById('sync').classList.add('fa-spin');
             try {
                 const r = await fetch(API); db = await r.json();
                 renderAll();
-            } catch (e) { alert("Errore."); }
+            } catch (e) { alert("Errore di connessione."); }
             document.getElementById('sync').classList.remove('fa-spin');
         }
 
-        function parseD(s) { let p = s.split('T')[0].split(/[-/]/); return new Date(p[0].length===4?p[0]:p[2], p[1]-1, p[0].length===4?p[2]:p[0], 12, 0, 0); }
-        function fixD(s) { let d = parseD(s); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`; }
+        function parseD(s) { 
+            if(!s || s === "Data") return new Date(2099,1,1);
+            let p = s.split('T')[0].split(/[-/]/);
+            return new Date(p[0].length===4?p[0]:p[2], p[1]-1, p[0].length===4?p[2]:p[0], 12, 0, 0); 
+        }
+
+        function fixD(s) { 
+            const d = parseD(s);
+            return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
 
         function renderAll() {
             const oggi = new Date(); oggi.setHours(0,0,0,0);
             
-            // Guide Future
-            const guide = db.richieste.filter(r => r[4] === 'ASSEGNATA' && parseD(r[1]) >= oggi).sort((a,b) => parseD(a[1]) - parseD(b[1]));
-            document.getElementById('lista-guide').innerHTML = guide.map(r => `
-                <div class="bg-white p-5 rounded-3xl border-l-4 border-green-500 shadow-sm flex justify-between items-center">
-                    <div><p class="text-[10px] font-black text-red-600">${fixD(r[1])}</p><h4 class="font-black uppercase text-sm">${r[3]}</h4><p class="text-xs font-bold text-slate-400">Ore: ${r[2]}</p></div>
-                    <select onchange="salvaTarga('${r[0]}', this.value)" class="p-2 bg-slate-50 border rounded-xl text-[10px] font-bold">
-                        <option value="">Mezzo...</option>
-                        ${db.veicoli.map(v => `<option value="${v[0]}" ${r[6]===v[0]?'selected':''}>${v[0]}</option>`).join('')}
-                    </select>
+            // Render Guide
+            const listGuide = document.getElementById('lista-guide');
+            const filt = db.richieste.filter(r => r[4] === currentFilter && r[0] !== "ID" && r[3]).sort((a,b) => parseD(a[1]) - parseD(b[1]));
+            listGuide.innerHTML = filt.map(r => `
+                <div class="card-admin p-8 space-y-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-red-600 font-black text-xl mb-1">${fixD(r[1])}</p>
+                            <h4 class="text-2xl font-black uppercase text-slate-800 tracking-tight">${r[3]}</h4>
+                            <p class="text-lg font-bold text-slate-400 mt-2"><i class="far fa-clock mr-2"></i> ${r[2]}</p>
+                        </div>
+                        <button onclick="delGuida('${r[0]}')" class="text-slate-300 hover:text-red-600 text-2xl transition"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                    <div class="pt-6 border-t-2 flex flex-col gap-4">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Assegnazione Mezzo</label>
+                        <select onchange="salvaTarga('${r[0]}', this.value)" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl font-black text-lg">
+                            <option value="">Scegli Mezzo...</option>
+                            ${db.veicoli.map(v => `<option value="${v[0]}" ${r[6]===v[0]?'selected':''}>${v[0]}</option>`).join('')}
+                        </select>
+                    </div>
+                    ${r[5] ? `<div class="bg-green-50 p-4 rounded-xl border border-green-100"><p class="text-sm font-black text-green-700 uppercase"><i class="fas fa-user-tie mr-2"></i> Trainer: ${r[5]}</p></div>` : ''}
                 </div>`).join('');
 
-            // Archivio
+            // Render Archivio
+            const listArch = document.getElementById('lista-archivio');
             const arch = db.richieste.filter(r => r[4] === 'ASSEGNATA' && parseD(r[1]) < oggi).sort((a,b) => parseD(b[1]) - parseD(a[1]));
-            document.getElementById('lista-archivio').innerHTML = arch.map(r => `<div class="bg-slate-50 p-3 rounded-xl flex justify-between text-[10px] font-bold"><span>${fixD(r[1])}</span><span>${r[3]}</span><span class="text-slate-400">${r[5]}</span></div>`).join('');
+            listArch.innerHTML = arch.map(r => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-6">${fixD(r[1])}</td>
+                    <td class="p-6 uppercase">${r[3]}</td>
+                    <td class="p-6 text-slate-500">${r[5]}</td>
+                    <td class="p-6 font-black text-red-600">${r[6] || '---'}</td>
+                </tr>`).join('');
 
-            // Mezzi
-            document.getElementById('lista-mezzi').innerHTML = db.veicoli.map(v => `<span class="bg-white border px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-sm">${v[0]}</span>`).join('');
-            
-            // Staff
-            document.getElementById('lista-staff').innerHTML = db.anagrafica.map(a => `<div class="flex justify-between p-4 border-b font-bold text-xs"><span>${a[1]} (${a[0]})</span><button onclick="delPersona('${a[1]}')" class="text-red-500"><i class="fas fa-trash"></i></button></div>`).join('');
+            // Render Staff
+            const gridStaff = document.getElementById('grid-staff');
+            gridStaff.innerHTML = db.anagrafica.filter(a => a[0] && a[1] && a[0] !== "RUOLO").map(a => `
+                <div class="bg-white p-6 rounded-3xl border-2 border-slate-100 flex justify-between items-center shadow-sm">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest ${a[0]==='TRAINER'?'text-green-600':'text-blue-600'}">${a[0]}</p>
+                        <h5 class="text-xl font-black uppercase text-slate-800">${a[1]}</h5>
+                        <p class="text-xs font-bold text-slate-400">Patente ${a[3] || 'N.D.'}</p>
+                    </div>
+                    <button onclick="delPersona('${a[1]}')" class="w-12 h-12 rounded-xl bg-slate-50 text-slate-300 hover:bg-red-50 hover:text-red-600 transition flex items-center justify-center">
+                        <i class="fas fa-user-minus"></i>
+                    </button>
+                </div>`).join('');
+
+            // Render Mezzi
+            document.getElementById('lista-mezzi').innerHTML = db.veicoli.map(v => `<div class="bg-white border-4 border-slate-100 px-8 py-4 rounded-3xl font-black text-2xl uppercase shadow-md">${v[0]}</div>`).join('');
+        }
+
+        async function salvaTarga(id, val) {
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val }) });
+        }
+
+        async function addPersona() {
+            const r = document.getElementById('add-ruolo').value, n = document.getElementById('add-nome').value.trim().toUpperCase(), e = document.getElementById('add-email').value.trim(), c = document.getElementById('add-cat').value;
+            if(!n) return alert("Manca il nome!");
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ADD_PERSONA", ruolo: r, nome: n, email: e, cat: c }) });
+            location.reload();
         }
 
         async function addMezzo() {
@@ -108,34 +231,34 @@
             location.reload();
         }
 
-        async function salvaTarga(id, val) {
-            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "SET_MEZZO", idRichiesta: id, mezzo: val }) });
-        }
-
-        function esportaCSV() {
-            let csv = "ID,Data,Orario,Allievo,Stato,Istruttore,Mezzo\n";
-            db.richieste.forEach(r => { csv += r.join(",") + "\n"; });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('href', url);
-            a.setAttribute('download', 'Recap_Guide_CRI.csv');
-            a.click();
-        }
+        async function delGuida(id) { if(confirm("Cancellare la guida?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); init(); } }
+        async function delPersona(n) { if(confirm("Eliminare profilo?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: n }) }); init(); } }
 
         function switchTab(t) {
             ['guide','archivio','staff','mezzi'].forEach(s => {
                 document.getElementById('sec-'+s).classList.toggle('hidden', s !== t);
-                document.getElementById('t-'+s).classList.toggle('text-slate-400', s !== t);
                 document.getElementById('t-'+s).classList.toggle('tab-active', s === t);
             });
         }
-        
-        async function addPersona() {
-            const r = document.getElementById('add-ruolo').value, n = document.getElementById('add-nome').value.trim().toUpperCase(), e = document.getElementById('add-email').value.trim(), c = document.getElementById('add-cat').value;
-            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ADD_PERSONA", ruolo: r, nome: n, email: e, cat: c }) }); location.reload();
+
+        function filterStatus(s) {
+            currentFilter = s;
+            document.getElementById('f-aperta').classList.toggle('bg-white', s === 'APERTA');
+            document.getElementById('f-assegnata').classList.toggle('bg-white', s === 'ASSEGNATA');
+            renderAll();
         }
-        async function delPersona(n) { if(confirm("Elimina?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: n }) }); init(); } }
+
+        function esportaCSV() {
+            let csv = "Data;Orario;Allievo;Istruttore;Mezzo\n";
+            db.richieste.filter(r => r[4] === 'ASSEGNATA').forEach(r => {
+                csv += `${fixD(r[1])};${r[2]};${r[3]};${r[5]};${r[6]}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.setAttribute("href", URL.createObjectURL(blob));
+            link.setAttribute("download", "report_guide_CRI.csv");
+            link.click();
+        }
 
         window.onload = init;
     </script>
