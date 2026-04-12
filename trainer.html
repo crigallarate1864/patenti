@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CRI Gallarate - Trainer Pro</title>
+    <title>CRI Trainer Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
@@ -16,83 +16,67 @@
     </style>
 </head>
 <body class="pb-20">
-
     <header class="bg-white p-4 shadow-sm border-b sticky top-0 z-50 flex justify-between items-center">
-        <div class="flex items-center gap-4">
-            <img src="logo.png" alt="CRI" class="w-16 h-auto" onerror="this.style.display='none'">
-            <div>
-                <h1 class="text-xl font-black uppercase leading-none">Area <span class="text-green-600">Trainer</span></h1>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">CRI Gallarate</p>
-            </div>
-        </div>
+        <div class="flex items-center gap-4"><img src="logo.png" alt="CRI" class="w-16 h-auto" onerror="this.style.display='none'"><div><h1 class="text-xl font-black uppercase tracking-tight">Area <span class="text-green-600">Trainer</span></h1></div></div>
         <div id="loader" class="hidden animate-spin text-green-600 text-xl"><i class="fas fa-circle-notch"></i></div>
     </header>
 
-    <main class="p-4 max-w-xl mx-auto space-y-6 mt-4">
-        <div id="db-trainer" class="hidden space-y-3">
-            <div class="bg-slate-900 text-white p-4 rounded-3xl flex justify-between items-center shadow-xl">
-                <div><p class="text-[10px] font-bold uppercase opacity-60 italic">Guide Confermate</p><p id="t-stat-tot" class="text-3xl font-black leading-none">0</p></div>
-                <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center"><i class="fas fa-clipboard-check text-xl text-green-400"></i></div>
-            </div>
-            <div id="next-guida-box" class="hidden bg-white p-4 rounded-3xl border-2 border-green-500 shadow-lg">
-                <p class="text-[9px] font-black text-green-600 uppercase mb-1 tracking-widest"><i class="fas fa-star mr-1"></i> Prossimo Impegno</p>
-                <div id="next-guida-content"></div>
-            </div>
+    <main class="p-4 max-w-xl mx-auto space-y-6">
+        <div id="db-trainer" class="hidden bg-slate-900 text-white p-4 rounded-3xl flex justify-between items-center shadow-xl">
+            <div><p class="text-[10px] font-bold uppercase opacity-60">Guide Confermate</p><p id="t-stat-tot" class="text-3xl font-black">0</p></div>
+            <i class="fas fa-clipboard-check text-2xl text-green-400"></i>
         </div>
 
         <div class="bg-white p-5 rounded-[2rem] shadow-xl border border-white">
-            <label class="text-[10px] font-black uppercase text-slate-400 ml-2 mb-2 block tracking-widest italic">Identità Istruttore</label>
             <select id="ist-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl font-extrabold border-none outline-none text-slate-700 shadow-inner"></select>
         </div>
 
-        <section class="space-y-4">
-            <div class="flex items-center justify-between px-2"><h3 class="text-xs font-black text-slate-400 uppercase italic">Proposte Allievi</h3><span id="count-proposte" class="bg-green-100 text-green-700 text-[10px] font-black px-2 py-0.5 rounded-full">0</span></div>
-            <div id="lista-proposte" class="space-y-4"></div>
-        </section>
-
-        <section class="space-y-4 pt-4"><h3 class="text-xs font-black text-slate-400 uppercase italic text-center">I Miei Impegni Storici</h3><div id="miei-impegni" class="space-y-3"></div></section>
+        <div id="lista-proposte" class="space-y-4"></div>
+        <div id="miei-impegni" class="space-y-3 pt-4 border-t"></div>
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbwqsrhXnGNkAj3FDBs6TqPoNb5eVPkv72yAu528YeYK0oiawFFtflx_9g_7JBgBTfwf/exec";
+        const API = "https://script.google.com/macros/s/AKfycbx-uPuEAgD1T1FpXFCz7wGdWULbhu12Z6Fwi47GUm-IjwOrl7aljcBLmHyQkP8vpe7M/exec";
         let db = { anagrafica: [], richieste: [] };
 
         async function init() {
             document.getElementById('loader').classList.remove('hidden');
             try {
                 const r = await fetch(API); db = await r.json();
-                const trainers = db.anagrafica.filter(x => x[0] === 'TRAINER');
-                document.getElementById('ist-nome').innerHTML = '<option value="">-- Chi sei? --</option>' + trainers.map(t => `<option value="${t[1]}">${t[1]}</option>`).join('');
+                const tr = db.anagrafica.filter(x => x[0] === 'TRAINER');
+                document.getElementById('ist-nome').innerHTML = '<option value="">-- Chi sei? --</option>' + tr.map(t => `<option value="${t[1]}">${t[1]}</option>`).join('');
                 renderProposte(); updateView();
             } catch (e) {}
             document.getElementById('loader').classList.add('hidden');
         }
 
-        function parseD(s) { let p = s.split('T')[0].split(/[-/]/); return new Date(p[0].length===4?p[0]:p[2], p[1]-1, p[0].length===4?p[2]:p[0], 12, 0, 0); }
-        
         function fixD(s) { 
-            const d = parseD(s);
-            const day = String(d.getDate()).padStart(2, '0');
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            return `${day}-${month}-${d.getFullYear()}`;
+            if(!s || s === "Data") return "";
+            let p = s.split('T')[0].split(/[-/]/);
+            let y = p[0].length === 4 ? p[0] : p[2], m = p[1], d = p[0].length === 4 ? p[2] : p[0];
+            return `${d}-${m}-${y}`;
         }
 
         function renderProposte() {
             const container = document.getElementById('lista-proposte');
             const aperte = db.richieste.filter(r => r[4] === 'APERTA');
-            document.getElementById('count-proposte').innerText = aperte.length;
             const grouped = aperte.reduce((acc, r) => { (acc[r[3]] = acc[r[3]] || []).push(r); return acc; }, {});
-            let html = ""; let idx = 0;
+            let h = ""; let idx = 0;
             for (const allievo in grouped) {
                 idx++;
-                html += `<div class="bg-white rounded-[2.5rem] shadow-xl border border-white overflow-hidden"><div onclick="toggleAccordion('acc-${idx}')" class="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center shadow-inner"><i class="fas fa-user-graduate text-xl"></i></div><h4 class="text-lg font-black uppercase text-slate-800 tracking-tighter">${allievo}</h4></div><i id="icon-acc-${idx}" class="fas fa-chevron-down text-slate-300 text-sm rotate-icon"></i></div><div id="acc-${idx}" class="accordion-content px-6"><div class="space-y-6 pt-2 border-t border-slate-50">`;
+                h += `<div class="bg-white rounded-[2.5rem] shadow-xl border border-white overflow-hidden">
+                    <div onclick="toggleAccordion('acc-${idx}')" class="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50">
+                        <div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center font-black">${grouped[allievo].length}</div><h4 class="text-lg font-black uppercase text-slate-800">${allievo}</h4></div>
+                        <i id="icon-acc-${idx}" class="fas fa-chevron-down text-slate-300 rotate-icon"></i>
+                    </div>
+                    <div id="acc-${idx}" class="accordion-content px-6"><div class="space-y-4 pt-2">`;
                 const dateGroup = grouped[allievo].reduce((acc, r) => { (acc[r[1]] = acc[r[1]] || []).push(r); return acc; }, {});
-                for (const data in dateGroup) {
-                    html += `<div><p class="text-[12px] font-black text-red-600 uppercase mb-2">${fixD(data)}</p><div class="grid grid-cols-2 gap-2">${dateGroup[data].map(slot => `<button onclick="accetta('${slot[0]}','${allievo}','${slot[1]}','${slot[2]}')" class="bg-white border-2 border-slate-100 text-slate-700 py-3 rounded-2xl font-black text-xs hover:border-green-500 transition">${slot[2]}</button>`).join('')}</div></div>`;
+                for (const d in dateGroup) {
+                    h += `<div><p class="text-[11px] font-black text-red-600 mb-2">${fixD(d)}</p><div class="grid grid-cols-2 gap-2">${dateGroup[d].map(s => `<button onclick="accetta('${s[0]}','${allievo}','${s[1]}','${s[2]}')" class="bg-white border-2 border-slate-100 p-3 rounded-2xl font-black text-xs hover:border-green-500">${s[2]}</button>`).join('')}</div></div>`;
                 }
-                html += `</div></div></div>`;
+                h += `</div></div></div>`;
             }
-            container.innerHTML = html || '<p class="text-center text-slate-400 font-bold uppercase text-[10px] py-10">Nessuna proposta</p>';
+            container.innerHTML = h || '<p class="text-center text-slate-400 py-10 uppercase font-black text-xs tracking-widest">Nessuna proposta</p>';
         }
 
         function updateView() {
@@ -100,24 +84,16 @@
             document.getElementById('db-trainer').classList.remove('hidden');
             const miei = db.richieste.filter(r => r[5] === ist && r[4] === 'ASSEGNATA');
             document.getElementById('t-stat-tot').innerText = miei.length;
-            const oggi = new Date(); oggi.setHours(0,0,0,0);
-            const future = miei.filter(r => parseD(r[1]) >= oggi).sort((a,b) => parseD(a[1]) - parseD(b[1]));
-            if(future.length > 0) {
-                document.getElementById('next-guida-box').classList.remove('hidden');
-                document.getElementById('next-guida-content').innerHTML = `<p class="font-black text-slate-800 text-sm uppercase">${fixD(future[0][1])}</p><p class="text-xs font-bold text-slate-500 uppercase">Ore ${future[0][2]} — ${future[0][3]}</p>`;
-            } else { document.getElementById('next-guida-box').classList.add('hidden'); }
-            document.getElementById('miei-impegni').innerHTML = miei.map(r => `<div class="bg-white p-5 rounded-[2rem] shadow-md border border-white flex justify-between items-center"><div><p class="uppercase text-red-600 text-[11px] font-black mb-1">${fixD(r[1])}</p><p class="uppercase text-slate-800 font-black text-xs">ORE ${r[2]} — ${r[3]}</p></div><p class="text-red-600 font-black text-xs uppercase">${r[6] || '---'}</p></div>`).reverse().join('');
+            document.getElementById('miei-impegni').innerHTML = miei.map(r => `<div class="bg-white p-5 rounded-[2rem] shadow-md border flex justify-between items-center"><div><p class="uppercase text-red-600 text-[10px] font-black mb-1">${fixD(r[1])}</p><p class="uppercase text-slate-800 font-black text-xs">ORE ${r[2]} — ${r[3]}</p></div><p class="text-red-600 font-black text-xs uppercase">${r[6] || '---'}</p></div>`).reverse().join('');
         }
 
         async function accetta(id, allievo, data, ora) {
-            const ist = document.getElementById('ist-nome').value; if(!ist) return alert("Seleziona il tuo nome!");
+            const ist = document.getElementById('ist-nome').value; if(!ist) return alert("Chi sei?");
             const info = db.anagrafica.find(x => x[1] === allievo);
             const max = (info && info[3] === "5") ? 6 : 4;
-            const attualiA = db.richieste.filter(r => r[3] === allievo && r[4] === 'ASSEGNATA').length;
-            if (attualiA >= max) return alert(`Limite raggiunto per ${allievo}.`);
-            const attualiC = db.richieste.filter(r => r[5] === ist && r[3] === allievo && r[4] === 'ASSEGNATA').length;
-            if (attualiC >= 2) return alert(`Hai già fatto 2 guide con ${allievo}.`);
-            if(!confirm(`Accetti ${allievo} il ${fixD(data)}?`)) return;
+            if (db.richieste.filter(r => r[3] === allievo && r[4] === 'ASSEGNATA').length >= max) return alert("Limite patente raggiunto!");
+            if (db.richieste.filter(r => r[5] === ist && r[3] === allievo && r[4] === 'ASSEGNATA').length >= 2) return alert("Limite coppia raggiunto!");
+            if(!confirm(`Confermi guida con ${allievo}?`)) return;
             document.getElementById('loader').classList.remove('hidden');
             await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ACCETTA", idRichiesta: id, allievo: allievo, istruttore: ist, dataGuida: data, oraGuida: ora }) });
             location.reload();
