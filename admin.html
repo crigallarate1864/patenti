@@ -40,7 +40,7 @@
                     <i class="fas fa-file-csv"></i>
                 </button>
                 <button onclick="init()" class="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center hover:bg-red-600 hover:text-white transition">
-                    <i id="sync" class="fas fa-sync-alt text-xl"></i>
+                    <i id="sync" class="fas fa-sync-alt"></i>
                 </button>
             </div>
         </div>
@@ -56,7 +56,6 @@
     </nav>
 
     <main class="container-xl px-6">
-        
         <div id="sec-guide" class="space-y-8">
             <div class="flex items-center gap-3 bg-slate-100 p-2 rounded-2xl w-fit">
                 <button onclick="filterStatus('APERTA')" id="f-aperta" class="filter-btn filter-active px-8 py-3 rounded-xl font-black text-sm uppercase">In Attesa</button>
@@ -80,7 +79,7 @@
 
         <div id="sec-staff" class="hidden space-y-8">
             <div class="bg-white p-10 rounded-[3rem] border-4 border-slate-100 shadow-xl">
-                <h2 class="text-2xl font-black mb-8 uppercase text-red-600">Inserimento Nuovo Staff/Allievo</h2>
+                <h2 class="text-2xl font-black mb-8 uppercase text-red-600">Gestione Profili</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                     <select id="add-ruolo" class="p-5 bg-slate-50 rounded-2xl border-2 font-bold outline-none"><option value="DISCENTE">DISCENTE</option><option value="TRAINER">TRAINER</option></select>
                     <input type="text" id="add-nome" placeholder="COGNOME NOME" class="p-5 bg-slate-50 rounded-2xl border-2 font-bold uppercase outline-none">
@@ -96,7 +95,7 @@
             <div class="bg-white p-10 rounded-[3rem] border-4 border-slate-100 shadow-xl max-w-2xl mx-auto text-center">
                 <h2 class="text-2xl font-black mb-6 uppercase">Aggiungi Mezzo</h2>
                 <div class="flex gap-4">
-                    <input type="text" id="add-targa" placeholder="TARGA (ES. CRI 1234)" class="flex-1 p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold uppercase text-center outline-none">
+                    <input type="text" id="add-targa" placeholder="TARGA" class="flex-1 p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 font-bold uppercase text-center outline-none">
                     <button onclick="addMezzo()" class="bg-slate-900 text-white font-black px-10 rounded-2xl uppercase">Salva</button>
                 </div>
             </div>
@@ -118,23 +117,29 @@
             document.getElementById('sync').classList.remove('fa-spin');
         }
 
-        function fixD(s) { 
-            if(!s || s === "Data") return "N.D.";
+        function parseD(s) { 
+            if(!s || s === "Data") return new Date(2099,1,1);
             let p = s.split('T')[0].split(/[-/]/);
-            let d = p[0].length === 4 ? p[2] : p[0], m = p[1], y = p[0].length === 4 ? p[0] : p[2];
-            return `${d}-${m}-${y}`;
+            return new Date(p[0].length===4?p[0]:p[2], p[1]-1, p[0].length===4?p[2]:p[0], 12, 0, 0); 
+        }
+
+        function fixD(s) { 
+            const d = parseD(s);
+            return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
         }
 
         function generaRecapWA() {
+            const oggi = new Date(); oggi.setHours(0,0,0,0);
             const aperte = db.richieste.filter(r => r[4] === 'APERTA' && r[3] && r[0] !== "ID");
-            const conf = db.richieste.filter(r => r[4] === 'ASSEGNATA' && r[3] && r[0] !== "ID").sort((a,b) => new Date(a[1]) - new Date(b[1]));
+            
+            // Filtro solo guide confermate da oggi in avanti
+            const conf = db.richieste.filter(r => r[4] === 'ASSEGNATA' && r[3] && r[0] !== "ID" && parseD(r[1]) >= oggi);
 
             let m = "📋 *RECAP GUIDE CRI GALLARATE*\n\n";
 
-            // 1. PARTE SINTETICA: GUIDE DA ASSEGNARE
+            // 1. MANCANO DA ASSEGNARE
             if (aperte.length > 0) {
                 m += "⚠️ *MANCANO DA ASSEGNARE:*\n";
-                // Raggruppo per allievo raccogliendo date uniche e conteggio
                 const stats = aperte.reduce((acc, r) => {
                     if (!acc[r[3]]) acc[r[3]] = { count: 0, dates: new Set() };
                     acc[r[3]].count++;
@@ -149,13 +154,18 @@
                 m += "\n👉 *ACCETTA QUI:* https://crigallarate1864.github.io/patenti/trainer.html\n\n---\n\n";
             }
 
-            // 2. PARTE DETTAGLIATA: GUIDE CONFERMATE
-            m += "🚗 *GUIDE CONFERMATE:*\n";
-            let ud = "";
+            // 2. GUIDE CONFERMATE (Ordinate per Nome Allievo)
+            m += "🚗 *GUIDE CONFERMATE (FUTURE):*\n";
+            conf.sort((a, b) => a[3].localeCompare(b[3]));
+
+            let ultimoAllievo = "";
             conf.forEach(r => {
-                const df = fixD(r[1]);
-                if (df !== ud) { m += `\n📅 *${df}*\n`; ud = df; }
-                m += `• Ore ${r[2]}: _${r[3]}_ con *${r[5]}*\n🚒 Mezzo: ${r[6] || 'N.D.'}\n\n`;
+                const allievoCorrente = r[3].toUpperCase();
+                if (allievoCorrente !== ultimoAllievo) {
+                    m += `\n👤 *${allievoCorrente}*\n`;
+                    ultimoAllievo = allievoCorrente;
+                }
+                m += `• ${fixD(r[1])} - Ore ${r[2]}\n👤 Trainer: ${r[5]}\n🚒 Mezzo: ${r[6] || 'N.D.'}\n\n`;
             });
 
             window.open(`https://wa.me/?text=${encodeURIComponent(m)}`, '_blank');
@@ -173,7 +183,7 @@
         function renderAll() {
             const oggi = new Date(); oggi.setHours(0,0,0,0);
             const listGuide = document.getElementById('lista-guide');
-            const filt = db.richieste.filter(r => r[4] === currentFilter && r[3]).sort((a,b) => new Date(a[1]) - new Date(b[1]));
+            const filt = db.richieste.filter(r => r[4] === currentFilter && r[3]).sort((a,b) => parseD(a[1]) - parseD(b[1]));
             
             listGuide.innerHTML = filt.map((r, i) => `
                 <div id="card-${i}" class="card-admin p-8 space-y-6">
@@ -194,7 +204,7 @@
                     ${r[5] ? `<div class="bg-green-50 p-4 rounded-xl border border-green-100 text-center font-black text-green-700 uppercase">Istruttore: ${r[5]}</div>` : ''}
                 </div>`).join('');
 
-            const arch = db.richieste.filter(r => r[4] === 'ASSEGNATA' && new Date(r[1]) < oggi).sort((a,b) => new Date(b[1]) - new Date(a[1]));
+            const arch = db.richieste.filter(r => r[4] === 'ASSEGNATA' && parseD(r[1]) < oggi).sort((a,b) => parseD(b[1]) - parseD(a[1]));
             document.getElementById('lista-archivio').innerHTML = arch.map(r => `<tr class="hover:bg-slate-50 font-bold"><td class="p-6">${fixD(r[1])}</td><td class="p-6 uppercase">${r[3]}</td><td class="p-6 text-slate-500">${r[5]}</td><td class="p-6 text-red-600">${r[6] || '-'}</td></tr>`).join('');
 
             const gridStaff = document.getElementById('grid-staff');
@@ -216,7 +226,7 @@
             location.reload();
         }
 
-        async function delGuida(id) { if(confirm("Cancellare definitivamente questa guida?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); init(); } }
+        async function delGuida(id) { if(confirm("Eliminare la guida?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_GUIDA", id: id }) }); init(); } }
         async function delPersona(n) { if(confirm("Eliminare profilo staff/allievo?")) { await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "DEL_PERSONA", nome: n }) }); init(); } }
 
         function switchTab(t) {
