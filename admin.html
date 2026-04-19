@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Outfit', sans-serif; background: #f8fafc; color: #0f172a; font-size: 18px; }
+        body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; color: #0f172a; font-size: 18px; }
         .tab-btn { background: #f1f5f9; color: #64748b; border: 2px solid #e2e8f0; transition: all 0.3s; }
         .tab-btn.tab-active { background: #ed1c24 !important; color: white !important; border-color: #ed1c24 !important; box-shadow: 0 10px 15px -3px rgba(237, 28, 36, 0.4); }
         .hidden { display: none; }
@@ -103,28 +103,37 @@
             const aperte = db.richieste.filter(r => r[4] === 'APERTA' && r[3] && r[0] !== "ID" && isFuture(r[1], r[2]));
             const conf = db.richieste.filter(r => r[4] === 'ASSEGNATA' && r[3] && r[0] !== "ID" && isFuture(r[1], r[2]));
             
-            let m = "📋 *RECAP GUIDE CRI GALLARATE*\n\n";
+            let m = "*RECAP GUIDE CRI GALLARATE*\n\n";
             
             if (aperte.length > 0) {
-                m += "⚠️ *RICHIESTE IN ATTESA:*\n";
+                m += "*RICHIESTE IN ATTESA DI ASSEGNAZIONE*\n";
                 const stats = aperte.reduce((acc, r) => { 
                     if (!acc[r[3]]) acc[r[3]] = { count: 0 }; 
                     acc[r[3]].count++; 
                     return acc; 
                 }, {});
                 for (const allievo in stats) { 
-                    m += `• L'ALLIEVO *${allievo.toUpperCase()}* STA ATTENDENDO L'ASSEGNAZIONE DI *${stats[allievo].count}* GUIDA/E\n`; 
+                    m += "L'ALLIEVO *" + allievo.toUpperCase() + "* STA ATTENDENDO L'ASSEGNAZIONE DI *" + stats[allievo].count + "* GUIDA/E\n"; 
                 }
-                m += "\n👉 *CLICCA QUI PER ACCETTARE:* https://crigallarate1864.github.io/patenti/trainer.html\n\n---\n\n";
+                m += "\nCLICCA SUL LINK PER ACCETTARE LA PROPOSTA:\nhttps://crigallarate1864.github.io/patenti/trainer.html\n\n";
             }
             
-            m += "🚗 *GUIDE CONFERMATE:*\n";
-            conf.sort((a,b) => a[3].localeCompare(b[3]));
-            let ua = "";
-            conf.forEach(r => { 
-                if (r[3].toUpperCase() !== ua) { m += `\n👤 *${r[3].toUpperCase()}*\n`; ua = r[3].toUpperCase(); } 
-                m += `• ${fixD(r[1])} - Ore ${r[2]}\nIstruttore: ${r[5]}\n🚒 Mezzo: ${r[6] || 'N.D.'}\n\n`;
-            });
+            if (conf.length > 0) {
+                m += "----------------------------------\n";
+                m += "*RIEPILOGO GUIDE ASSEGNATE*\n";
+                conf.sort((a,b) => a[3].localeCompare(b[3]));
+                let ua = "";
+                conf.forEach(r => { 
+                    if (r[3].toUpperCase() !== ua) { 
+                        m += "\n*ALLIEVO: " + r[3].toUpperCase() + "*\n"; 
+                        ua = r[3].toUpperCase(); 
+                    } 
+                    m += "Giorno: " + fixD(r[1]) + " - Ore: " + r[2] + "\n";
+                    m += "Istruttore: " + r[5] + "\n";
+                    m += "Mezzo: " + (r[6] || 'Da assegnare') + "\n\n"; 
+                });
+            }
+            
             window.open(`https://wa.me/?text=${encodeURIComponent(m)}`, '_blank');
         }
 
@@ -152,8 +161,8 @@
                 return `<div class="bg-white p-8 rounded-[2.5rem] shadow-lg border border-slate-100"><h3 class="font-black uppercase text-xl text-slate-800 border-b-4 border-red-500 pb-2 mb-6">${t[1]}</h3><div class="grid grid-cols-2 gap-4"><div class="bg-green-50 p-4 rounded-3xl text-center border border-green-100"><p class="text-3xl font-black text-green-600">${fatte}</p><p class="text-[10px] font-bold uppercase text-slate-400">Guide Fatte</p></div><div class="bg-blue-50 p-4 rounded-3xl text-center border border-blue-100"><p class="text-3xl font-black text-blue-600">${pren}</p><p class="text-[10px] font-bold uppercase text-slate-400">Prenotate</p></div></div></div>`;
             }).join('');
 
-            document.getElementById('grid-staff').innerHTML = db.anagrafica.filter(a => a[0] && a[1] && a[0] !== "RUOLO").map(a => `<div class="bg-white p-5 rounded-3xl border flex justify-between items-center shadow-sm"><div><p class="text-[9px] font-black uppercase tracking-widest ${a[0]==='TRAINER'?'text-green-600':'text-blue-600'}">${a[0]}</p><h5 class="text-lg font-black uppercase text-slate-800">${a[1]}</h5><p class="text-xs font-bold text-slate-400 italic">Patente ${a[3] || '---'}</p></div><button onclick="delPersona('${a[1]}')" class="text-slate-200 hover:text-red-600 text-2xl transition"><i class="fas fa-user-minus"></i></button></div>`).join('');
-            document.getElementById('lista-mezzi').innerHTML = db.veicoli.map(v => `<div class="bg-white border-4 px-8 py-4 rounded-3xl font-black text-2xl uppercase shadow-sm">${v[0]}</div>`).join('');
+            document.getElementById('grid-staff').innerHTML = db.anagrafica.filter(a => a[0] && a[1] && a[0] !== "RUOLO").map(a => `<div class="bg-white p-6 rounded-3xl border flex justify-between items-center shadow-sm"><div><p class="text-[9px] font-black uppercase tracking-widest ${a[0]==='TRAINER'?'text-green-600':'text-blue-600'}">${a[0]}</p><h5 class="text-xl font-black uppercase text-slate-800">${a[1]}</h5><p class="text-xs font-bold text-slate-400 italic">Patente ${a[3] || '---'}</p></div><button onclick="delPersona('${a[1]}')" class="text-slate-200 hover:text-red-600 text-2xl transition"><i class="fas fa-user-minus"></i></button></div>`).join('');
+            document.getElementById('lista-mezzi').innerHTML = db.veicoli.map(v => `<div class="bg-white border-4 px-8 py-4 rounded-3xl font-black text-2xl uppercase shadow-md">${v[0]}</div>`).join('');
         }
 
         async function salvaTarga(id, val, cardId) {
