@@ -7,18 +7,42 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Outfit', sans-serif; background: #f1f5f9; } .accordion-content { max-height: 0; overflow: hidden; transition: all 0.4s ease-out; opacity: 0; } .accordion-content.open { max-height: 2000px; opacity: 1; padding: 1rem 0; }</style>
+    <style>
+        body { font-family: 'Outfit', sans-serif; background: #f1f5f9; } 
+        .accordion-content { max-height: 0; overflow: hidden; transition: all 0.4s ease-out; opacity: 0; } 
+        .accordion-content.open { max-height: 2000px; opacity: 1; padding: 1rem 0; }
+        .tab-btn { background: #e2e8f0; color: #64748b; border-radius: 1rem; transition: all 0.3s; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; padding: 0.75rem 1rem; }
+        .tab-btn.tab-active { background: #16a34a !important; color: white !important; }
+        .hidden { display: none; }
+    </style>
 </head>
 <body class="pb-20">
-    <header class="bg-white p-4 shadow-sm border-b flex justify-between items-center"><h1 class="font-black uppercase text-green-600 italic">Area Trainer</h1><div id="loader" class="hidden animate-spin text-green-600"><i class="fas fa-circle-notch"></i></div></header>
+    <header class="bg-white p-4 shadow-sm border-b flex justify-between items-center sticky top-0 z-50">
+        <h1 class="font-black uppercase text-green-600 italic">Area Trainer</h1>
+        <div id="loader" class="hidden animate-spin text-green-600"><i class="fas fa-circle-notch"></i></div>
+    </header>
+
+    <nav class="max-w-xl mx-auto px-4 py-4 flex gap-2">
+        <button onclick="switchTab('mie')" id="t-mie" class="tab-btn tab-active flex-1">Le mie guide</button>
+        <button onclick="switchTab('registro')" id="t-registro" class="tab-btn flex-1">Registro Trainer</button>
+    </nav>
 
     <main class="p-4 max-w-xl mx-auto space-y-6">
-        <div class="bg-white p-5 rounded-[2rem] shadow-xl border">
-            <label class="text-[10px] font-black text-slate-400 ml-2 mb-1 block uppercase italic">Seleziona il tuo nome</label>
-            <select id="ist-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl font-extrabold outline-none shadow-inner border"></select>
+        
+        <div id="sec-mie" class="space-y-6">
+            <div class="bg-white p-5 rounded-[2rem] shadow-xl border">
+                <label class="text-[10px] font-black text-slate-400 ml-2 mb-1 block uppercase italic">Seleziona il tuo nome</label>
+                <select id="ist-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl font-extrabold outline-none shadow-inner border"></select>
+            </div>
+            <div id="lista-proposte" class="space-y-4"></div>
+            <div id="miei-impegni" class="space-y-3 pt-6 border-t"></div>
         </div>
-        <div id="lista-proposte" class="space-y-4"></div>
-        <div id="miei-impegni" class="space-y-3 pt-6 border-t"></div>
+
+        <div id="sec-registro" class="hidden space-y-4">
+            <h3 class="text-xs font-black text-slate-400 uppercase text-center italic mb-2">Statistiche Operative Trainer</h3>
+            <div id="grid-registro" class="space-y-4"></div>
+        </div>
+
     </main>
 
     <script>
@@ -32,18 +56,19 @@
                 document.getElementById('ist-nome').innerHTML = '<option value="">-- Chi sei? --</option>' + 
                     db.anagrafica.filter(x => x[0] === 'TRAINER').map(t => `<option value="${t[1]}">${t[1]}</option>`).join('');
                 updateView();
+                renderRegistro();
             } catch (e) {}
             document.getElementById('loader').classList.add('hidden');
         }
 
         function fixD(s) { if(!s) return ""; let p = s.split('T')[0].split(/[-/]/); return `${p[0].length===4?p[2]:p[0]}-${p[1]}-${p[0].length===4?p[0]:p[2]}`; }
+        function parseD(s) { let p = s.split('T')[0].split(/[-/]/); return new Date(p[0].length===4?p[0]:p[2], p[1]-1, p[0].length===4?p[2]:p[0], 12, 0, 0); }
 
         function updateView() {
             const ist = document.getElementById('ist-nome').value; if(!ist) return;
             const tInfo = db.anagrafica.find(x => x[1] === ist);
-            const tCat = tInfo ? tInfo[3] : ""; // Categoria del Trainer
+            const tCat = tInfo ? tInfo[3] : "";
 
-            // Filtro proposte: Stessa categoria Allievo <-> Trainer
             const aperte = db.richieste.filter(r => {
                 if (r[4] !== 'APERTA') return false;
                 const aInfo = db.anagrafica.find(a => a[1] === r[3]);
@@ -63,7 +88,7 @@
                 });
                 h += `</div></div>`;
             }
-            document.getElementById('lista-proposte').innerHTML = h || '<p class="text-center text-slate-400 font-bold uppercase text-[10px] py-10 tracking-widest italic">Nessuna proposta compatibile con la tua categoria</p>';
+            document.getElementById('lista-proposte').innerHTML = h || '<p class="text-center text-slate-400 font-bold uppercase text-[10px] py-10 tracking-widest italic">Nessuna proposta compatibile</p>';
 
             const miei = db.richieste.filter(r => r[5] === ist && r[4] === 'ASSEGNATA').sort((a,b) => new Date(a[1]) - new Date(b[1]));
             document.getElementById('miei-impegni').innerHTML = miei.map(r => `
@@ -73,6 +98,37 @@
                 </div>`).reverse().join('');
         }
 
+        function renderRegistro() {
+            const oggi = new Date(); oggi.setHours(0,0,0,0);
+            const trainers = db.anagrafica.filter(a => a[0] === 'TRAINER');
+            const assegnate = db.richieste.filter(r => r[4] === 'ASSEGNATA');
+
+            document.getElementById('grid-registro').innerHTML = trainers.map(t => {
+                const guideT = assegnate.filter(r => r[5] === t[1]);
+                let fatte = 0, pianificate = 0;
+                
+                guideT.forEach(r => {
+                    if (parseD(r[1]) < oggi) fatte++;
+                    else pianificate++;
+                });
+
+                return `
+                <div class="bg-white p-6 rounded-[2rem] shadow-lg border border-slate-100">
+                    <h3 class="font-black uppercase text-lg text-slate-800 border-b-2 border-green-500 pb-2 mb-4">${t[1]}</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-green-50 p-3 rounded-2xl text-center">
+                            <p class="text-2xl font-black text-green-600">${fatte}</p>
+                            <p class="text-[8px] font-bold uppercase text-slate-400">Guide Fatte</p>
+                        </div>
+                        <div class="bg-blue-50 p-3 rounded-2xl text-center">
+                            <p class="text-2xl font-black text-blue-600">${pianificate}</p>
+                            <p class="text-[8px] font-bold uppercase text-slate-400">Pianificate</p>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
         async function accetta(id, allievo, data, ora) {
             const ist = document.getElementById('ist-nome').value; if(!ist) return alert("Chi sei?");
             if(!confirm(`Confermi guida con ${allievo}?`)) return;
@@ -80,6 +136,14 @@
             await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ACCETTA", idRichiesta: id, allievo: allievo, istruttore: ist, dataGuida: data, oraGuida: ora }) });
             location.reload();
         }
+
+        function switchTab(t) {
+            document.getElementById('sec-mie').classList.toggle('hidden', t !== 'mie');
+            document.getElementById('sec-registro').classList.toggle('hidden', t !== 'registro');
+            document.getElementById('t-mie').classList.toggle('tab-active', t === 'mie');
+            document.getElementById('t-registro').classList.toggle('tab-active', t === 'registro');
+        }
+
         function toggleAcc(id) { document.getElementById(id).classList.toggle('open'); }
         window.onload = init;
     </script>
