@@ -2,88 +2,63 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRI Allievi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Outfit', sans-serif; background: #f8fafc; }
-        .progress-bar { transition: width 1s ease-in-out; }
-        /* Rimuove freccine standard dai browser per i campi orario su alcuni dispositivi */
-        input[type="time"]::-webkit-calendar-picker-indicator { background: transparent; bottom: 0; color: transparent; cursor: pointer; height: auto; left: 0; position: absolute; right: 0; top: 0; width: auto; }
-    </style>
+    <style>body { font-family: 'Outfit', sans-serif; background: #f8fafc; }</style>
 </head>
 <body class="pb-10">
     <header class="bg-white p-4 shadow-sm sticky top-0 z-50 flex justify-between items-center border-b">
-        <div class="flex items-center gap-3"><img src="logo.png" class="h-10" onerror="this.style.display='none'"> <h1 class="font-black uppercase text-sm">Area <span class="text-blue-600">Allievi</span></h1></div>
+        <div class="flex items-center gap-3"><img src="logo.png" class="h-10"> <h1 class="font-black uppercase text-sm italic">Area Allievi</h1></div>
         <div id="loading" class="hidden animate-spin text-blue-600"><i class="fas fa-circle-notch"></i></div>
     </header>
 
     <main class="p-4 max-w-xl mx-auto space-y-6">
-        <div id="card-progresso" class="hidden bg-white p-5 rounded-[2rem] shadow-xl border">
+        <div id="card-progresso" class="hidden bg-white p-6 rounded-[2rem] shadow-xl border">
             <div class="flex justify-between items-end mb-2">
-                <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Il tuo percorso patente</p>
-                <p id="txt-progresso" class="text-xs font-black text-blue-600">0%</p>
+                <p class="text-[10px] font-black uppercase text-slate-400">Progresso Patente (Solo Guide Espletate)</p>
+                <p id="txt-progresso" class="text-xs font-black text-green-600">0%</p>
             </div>
             <div class="w-full bg-slate-100 h-4 rounded-full overflow-hidden">
-                <div id="bar-progresso" class="progress-bar bg-blue-600 h-full w-0"></div>
+                <div id="bar-progresso" class="transition-all duration-1000 bg-green-500 h-full w-0"></div>
             </div>
             <div class="grid grid-cols-3 gap-2 mt-4 text-center">
-                <div><p id="stat-fatte" class="text-lg font-black leading-none">0</p><p class="text-[8px] uppercase font-bold text-slate-400">Fatte</p></div>
-                <div><p id="stat-pren" class="text-lg font-black leading-none text-blue-600">0</p><p class="text-[8px] uppercase font-bold text-slate-400">Prenotate</p></div>
-                <div><p id="stat-res" class="text-lg font-black leading-none text-red-500">0</p><p class="text-[8px] uppercase font-bold text-slate-400">Mancanti</p></div>
+                <div><p id="stat-fatte" class="text-lg font-black text-green-600">0</p><p class="text-[8px] uppercase font-bold text-slate-400">Espletate</p></div>
+                <div><p id="stat-pren" class="text-lg font-black text-blue-600">0</p><p class="text-[8px] uppercase font-bold text-slate-400">Prenotate</p></div>
+                <div><p id="stat-res" class="text-lg font-black text-red-500">0</p><p class="text-[8px] uppercase font-bold text-slate-400">Mancanti</p></div>
             </div>
         </div>
 
         <section class="bg-white p-6 rounded-[2.5rem] shadow-xl border">
-            <h2 class="text-xl font-black mb-6 uppercase italic text-center text-slate-800">Invia Disponibilità</h2>
-            
-            <div class="space-y-5">
-                <div>
-                    <label class="block text-[10px] font-black uppercase text-slate-400 ml-2 mb-1">Seleziona il tuo nome</label>
-                    <select id="all-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner text-slate-700"></select>
-                </div>
-
-                <div>
-                    <label class="block text-[10px] font-black uppercase text-slate-400 ml-2 mb-1">Giorno della guida</label>
-                    <input type="date" id="all-data" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner text-slate-700">
-                </div>
-
+            <div class="space-y-4">
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 ml-2 mb-1">Nome Allievo</label>
+                <select id="all-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner"></select></div>
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 ml-2 mb-1">Giorno</label>
+                <input type="date" id="all-data" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold outline-none shadow-inner"></div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="relative">
-                        <label class="block text-[10px] font-black uppercase text-slate-400 ml-2 mb-1">Dalle ore</label>
-                        <input type="time" id="all-inizio" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner text-slate-700">
-                    </div>
-                    <div class="relative">
-                        <label class="block text-[10px] font-black uppercase text-slate-400 ml-2 mb-1">Alle ore</label>
-                        <input type="time" id="all-fine" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner text-slate-700">
-                    </div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 ml-2 mb-1">Dalle</label><input type="time" id="all-inizio" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 ml-2 mb-1">Alle</label><input type="time" id="all-fine" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center shadow-inner"></div>
                 </div>
-
-                <button onclick="inoltra()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase shadow-lg shadow-blue-100 active:scale-95 transition mt-2">Inoltra Disponibilità</button>
+                <button onclick="inoltra()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase shadow-lg">Inoltra Disponibilità</button>
             </div>
         </section>
-
-        <div class="flex items-center justify-between px-2">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Le mie richieste</h3>
-        </div>
         <div id="mie-guide" class="space-y-3"></div>
     </main>
 
     <script>
         const API = "https://script.google.com/macros/s/AKfycbzTlu8Jg28SAeu5bCBZjkhljTUZrhBj9MXeklZVECrmfpH9S1GheQyFFxpRTQgsW0oz/exec";
-        let db = { requests: [] };
+        let db = {};
 
         async function init() {
             document.getElementById('loading').classList.remove('hidden');
             try {
                 const r = await fetch(API); db = await r.json();
-                const discenti = db.anagrafica.filter(x => x[0] === 'DISCENTE');
                 document.getElementById('all-nome').innerHTML = '<option value="">-- Chi sei? --</option>' + 
-                    discenti.map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
+                    db.anagrafica.filter(x => x[0] === 'DISCENTE').map(x => `<option value="${x[1]}">${x[1]}</option>`).join('');
                 updateView();
-            } catch(e) { alert("Errore di caricamento."); }
+            } catch(e) {}
             document.getElementById('loading').classList.add('hidden');
         }
 
@@ -101,42 +76,28 @@
             let fatte = 0, pren = 0;
             assegnate.forEach(r => { if (parseD(r[1]) < oggi) fatte++; else pren++; });
 
-            const perc = Math.round(((fatte + pren) / max) * 100);
+            // LOGICA BARRA: SOLO LE ESPLATATE (FATTE)
+            const perc = Math.round((fatte / max) * 100);
             document.getElementById('bar-progresso').style.width = perc + "%";
             document.getElementById('txt-progresso').innerText = perc + "%";
             document.getElementById('stat-fatte').innerText = fatte;
             document.getElementById('stat-pren').innerText = pren;
             document.getElementById('stat-res').innerText = Math.max(0, max - (fatte + pren));
 
-            // Lista guide (senza più filtri mattina/pomeriggio)
             let mie = db.richieste.filter(r => r[3] === nome && (r[4]==='ASSEGNATA' || r[4]==='APERTA'));
-            
             document.getElementById('mie-guide').innerHTML = mie.sort((a,b) => parseD(a[1]) - parseD(b[1])).map(r => `
                 <div class="bg-white p-5 rounded-2xl shadow-sm border flex justify-between items-center">
-                    <div>
-                        <p class="text-[14px] font-black text-red-600 mb-0.5 uppercase tracking-tighter">${fixD(r[1])}</p>
-                        <p class="font-bold uppercase text-[11px] text-slate-800">ORE ${r[2]} - ${r[4] === 'ASSEGNATA' ? 'CON: ' + r[5] : 'IN ATTESA'}</p>
-                    </div>
+                    <div><p class="text-[14px] font-black text-red-600 mb-0.5 uppercase">${fixD(r[1])}</p><p class="font-bold uppercase text-[11px] text-slate-800">ORE ${r[2]} - ${r[4]}</p></div>
                     <span class="px-2 py-1 rounded-full text-[8px] font-black uppercase ${r[4]==='ASSEGNATA'?'bg-green-100 text-green-700':'bg-orange-100 text-orange-700'}">${r[4]==='ASSEGNATA'?'OK':'...'}</span>
                 </div>`).reverse().join('');
         }
 
         async function inoltra() {
             const n = document.getElementById('all-nome').value;
-            const data = document.getElementById('all-data').value;
-            const inizio = document.getElementById('all-inizio').value;
-            const fine = document.getElementById('all-fine').value;
-
-            if(!n || !data || !inizio || !fine) return alert("Per favore, compila tutti i campi!");
-            
+            if(!n) return alert("Scegli il tuo nome!");
             document.getElementById('loading').classList.remove('hidden');
-            try {
-                await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "INOLTRA", allievo: n, giorno: data, oraInizio: inizio, oraFine: fine }) });
-                location.reload();
-            } catch(e) { 
-                alert("Errore nell'invio della proposta.");
-                document.getElementById('loading').classList.add('hidden');
-            }
+            await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "INOLTRA", allievo: n, giorno: document.getElementById('all-data').value, oraInizio: document.getElementById('all-inizio').value, oraFine: document.getElementById('all-fine').value }) });
+            location.reload();
         }
         window.onload = init;
     </script>
