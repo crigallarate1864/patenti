@@ -2,32 +2,23 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRI Trainer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Outfit', sans-serif; background: #f1f5f9; }
-        .accordion-content { max-height: 0; overflow: hidden; transition: all 0.4s ease-out; opacity: 0; }
-        .accordion-content.open { max-height: 2000px; opacity: 1; padding: 1rem 0; }
-    </style>
+    <style>body { font-family: 'Outfit', sans-serif; background: #f1f5f9; } .accordion-content { max-height: 0; overflow: hidden; transition: all 0.4s ease-out; opacity: 0; } .accordion-content.open { max-height: 2000px; opacity: 1; padding: 1rem 0; }</style>
 </head>
 <body class="pb-20">
-    <header class="bg-white p-4 shadow-sm border-b flex justify-between items-center">
-        <h1 class="font-black uppercase text-green-600">Area Trainer</h1>
-        <div id="loader" class="hidden animate-spin text-green-600"><i class="fas fa-circle-notch"></i></div>
-    </header>
+    <header class="bg-white p-4 shadow-sm border-b flex justify-between items-center"><h1 class="font-black uppercase text-green-600 italic">Area Trainer</h1><div id="loader" class="hidden animate-spin text-green-600"><i class="fas fa-circle-notch"></i></div></header>
 
     <main class="p-4 max-w-xl mx-auto space-y-6">
         <div class="bg-white p-5 rounded-[2rem] shadow-xl border">
-            <select id="ist-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl font-extrabold border-none outline-none shadow-inner"></select>
+            <label class="text-[10px] font-black text-slate-400 ml-2 mb-1 block uppercase italic">Seleziona il tuo nome</label>
+            <select id="ist-nome" onchange="updateView()" class="w-full p-4 bg-slate-50 rounded-2xl font-extrabold outline-none shadow-inner border"></select>
         </div>
-
         <div id="lista-proposte" class="space-y-4"></div>
-        
-        <h3 class="text-xs font-black text-slate-400 uppercase text-center mt-10">I Tuoi Impegni</h3>
-        <div id="miei-impegni" class="space-y-3"></div>
+        <div id="miei-impegni" class="space-y-3 pt-6 border-t"></div>
     </main>
 
     <script>
@@ -38,62 +29,53 @@
             document.getElementById('loader').classList.remove('hidden');
             try {
                 const r = await fetch(API); db = await r.json();
-                const trainers = db.anagrafica.filter(x => x[0] === 'TRAINER');
-                document.getElementById('ist-nome').innerHTML = '<option value="">-- Chi sei? --</option>' + trainers.map(t => `<option value="${t[1]}">${t[1]}</option>`).join('');
-                renderProposte(); updateView();
+                document.getElementById('ist-nome').innerHTML = '<option value="">-- Chi sei? --</option>' + 
+                    db.anagrafica.filter(x => x[0] === 'TRAINER').map(t => `<option value="${t[1]}">${t[1]}</option>`).join('');
+                updateView();
             } catch (e) {}
             document.getElementById('loader').classList.add('hidden');
         }
 
-        function fixD(s) { let p = s.split('T')[0].split(/[-/]/); return `${p[0].length===4?p[2]:p[0]}-${p[1]}-${p[0].length===4?p[0]:p[2]}`; }
+        function fixD(s) { if(!s) return ""; let p = s.split('T')[0].split(/[-/]/); return `${p[0].length===4?p[2]:p[0]}-${p[1]}-${p[0].length===4?p[0]:p[2]}`; }
 
-        function renderProposte() {
-            const container = document.getElementById('lista-proposte');
-            const aperte = db.richieste.filter(r => r[4] === 'APERTA');
+        function updateView() {
+            const ist = document.getElementById('ist-nome').value; if(!ist) return;
+            const tInfo = db.anagrafica.find(x => x[1] === ist);
+            const tCat = tInfo ? tInfo[3] : ""; // Categoria del Trainer
+
+            // Filtro proposte: Stessa categoria Allievo <-> Trainer
+            const aperte = db.richieste.filter(r => {
+                if (r[4] !== 'APERTA') return false;
+                const aInfo = db.anagrafica.find(a => a[1] === r[3]);
+                return aInfo && aInfo[3] === tCat;
+            });
+
             const grouped = aperte.reduce((acc, r) => { (acc[r[3]] = acc[r[3]] || []).push(r); return acc; }, {});
             let h = ""; let idx = 0;
             for (const allievo in grouped) {
                 idx++;
                 h += `<div class="bg-white rounded-[2.5rem] shadow-xl border overflow-hidden p-6">
-                        <div onclick="toggleAcc('acc-${idx}')" class="flex justify-between items-center cursor-pointer">
-                            <h4 class="font-black uppercase">${allievo}</h4>
-                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black">${grouped[allievo].length} Proposte</span>
-                        </div>
-                        <div id="acc-${idx}" class="accordion-content space-y-4">`;
+                        <div onclick="toggleAcc('acc-${idx}')" class="flex justify-between items-center cursor-pointer"><h4 class="font-black uppercase">${allievo}</h4><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black">${grouped[allievo].length} Disponibili</span></div>
+                        <div id="acc-${idx}" class="accordion-content space-y-3">`;
                 grouped[allievo].sort((a,b) => new Date(a[1]) - new Date(b[1])).forEach(s => {
-                    h += `<div class="flex justify-between items-center bg-slate-50 p-3 rounded-2xl">
-                        <p class="text-[11px] font-black uppercase text-red-600">${fixD(s[1])}<br><span class="text-slate-800">Ore ${s[2]}</span></p>
-                        <button onclick="accetta('${s[0]}','${allievo}','${s[1]}','${s[2]}')" class="bg-slate-900 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase">Accetta</button>
-                    </div>`;
+                    h += `<div class="flex justify-between items-center bg-slate-50 p-3 rounded-2xl"><p class="text-[11px] font-black uppercase text-red-600">${fixD(s[1])}<br><span class="text-slate-800">Ore ${s[2]}</span></p>
+                        <button onclick="accetta('${s[0]}','${allievo}','${s[1]}','${s[2]}')" class="bg-slate-900 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase shadow-md">Accetta</button></div>`;
                 });
                 h += `</div></div>`;
             }
-            container.innerHTML = h || '<p class="text-center text-slate-400 font-bold uppercase text-[10px] py-10">Nessuna proposta</p>';
-        }
+            document.getElementById('lista-proposte').innerHTML = h || '<p class="text-center text-slate-400 font-bold uppercase text-[10px] py-10 tracking-widest italic">Nessuna proposta compatibile con la tua categoria</p>';
 
-        function updateView() {
-            const ist = document.getElementById('ist-nome').value; if(!ist) return;
             const miei = db.richieste.filter(r => r[5] === ist && r[4] === 'ASSEGNATA').sort((a,b) => new Date(a[1]) - new Date(b[1]));
-            document.getElementById('miei-impegni').innerHTML = miei.map(r => {
-                const calUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=Guida+${r[3]}&dates=20260101T120000Z/20260101T130000Z&details=Mezzo:+${r[6]}`;
-                return `<div class="bg-white p-5 rounded-[2rem] shadow-md border flex justify-between items-center">
+            document.getElementById('miei-impegni').innerHTML = miei.map(r => `
+                <div class="bg-white p-5 rounded-[2rem] shadow-md border flex justify-between items-center">
                     <div><p class="uppercase text-red-600 text-[10px] font-black mb-1">${fixD(r[1])}</p><p class="uppercase text-slate-800 font-black text-xs">ORE ${r[2]} — ${r[3]}</p></div>
-                    <div class="flex gap-2">
-                        <a href="${calUrl}" target="_blank" class="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center shadow-sm"><i class="far fa-calendar-plus text-xs"></i></a>
-                        <p class="text-red-600 font-black text-[10px] uppercase bg-red-50 px-2 py-1 rounded-lg">${r[6] || '---'}</p>
-                    </div>
-                </div>`
-            }).reverse().join('');
+                    <p class="text-red-600 font-black text-[10px] uppercase bg-red-50 px-2 py-1 rounded-lg">${r[6] || '---'}</p>
+                </div>`).reverse().join('');
         }
 
         async function accetta(id, allievo, data, ora) {
-            const ist = document.getElementById('ist-nome').value; if(!ist) return alert("Scegli il tuo nome!");
-            
-            // CONFLICT CHECK
-            const overlap = db.richieste.find(r => r[5] === ist && r[1] === data && r[2] === ora && r[4] === 'ASSEGNATA');
-            if(overlap) return alert(`⚠️ CONFLITTO! Hai già una guida con ${overlap[3]} in questa fascia oraria.`);
-
-            if(!confirm(`Confermi la guida con ${allievo}?`)) return;
+            const ist = document.getElementById('ist-nome').value; if(!ist) return alert("Chi sei?");
+            if(!confirm(`Confermi guida con ${allievo}?`)) return;
             document.getElementById('loader').classList.remove('hidden');
             await fetch(API, { method: 'POST', body: JSON.stringify({ azione: "ACCETTA", idRichiesta: id, allievo: allievo, istruttore: ist, dataGuida: data, oraGuida: ora }) });
             location.reload();
