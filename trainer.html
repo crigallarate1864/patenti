@@ -46,7 +46,7 @@
     </main>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbzTlu8Jg28SAeu5bCBZjkhljTUZrhBj9MXeklZVECrmfpH9S1GheQyFFxpRTQgsW0oz/exec";
+        const API = "https://script.google.com/macros/s/AKfycbTlu8Jg28SAeu5bCBZjkhljTUZrhBj9MXeklZVECrmfpH9S1GheQyFFxpRTQgsW0oz/exec";
         let db = {};
 
         async function init() {
@@ -62,17 +62,27 @@
         }
 
         function fixD(s) { if(!s) return ""; let p = s.split('T')[0].split(/[-/]/); return `${p[0].length===4?p[2]:p[0]}-${p[1]}-${p[0].length===4?p[0]:p[2]}`; }
-        function parseD(s) { let p = s.split('T')[0].split(/[-/]/); return new Date(p[0].length===4?p[0]:p[2], p[1]-1, p[0].length===4?p[2]:p[0], 12, 0, 0); }
+        function parseD(s) { if(!s) return new Date(); let p = s.split('T')[0].split(/[-/]/); return new Date(p[0].length===4?p[0]:p[2], p[1]-1, p[0].length===4?p[2]:p[0], 12, 0, 0); }
 
         function updateView() {
             const ist = document.getElementById('ist-nome').value; if(!ist) return;
             const tInfo = db.anagrafica.find(x => x[1] === ist);
-            const tCat = tInfo ? tInfo[3] : "";
+            const tCat = tInfo ? tInfo[3].toString().trim() : "";
 
+            // LOGICA FILTRO PATENTI:
+            // Trainer Cat 5 -> Vede Allievi Cat 4 e 5
+            // Trainer Cat 4 -> Vede solo Allievi Cat 4
             const aperte = db.richieste.filter(r => {
                 if (r[4] !== 'APERTA') return false;
                 const aInfo = db.anagrafica.find(a => a[1] === r[3]);
-                return aInfo && aInfo[3] === tCat;
+                const aCat = aInfo ? aInfo[3].toString().trim() : "";
+                
+                if (tCat === "5") {
+                    return (aCat === "4" || aCat === "5");
+                } else if (tCat === "4") {
+                    return (aCat === "4");
+                }
+                return false;
             });
 
             const grouped = aperte.reduce((acc, r) => { (acc[r[3]] = acc[r[3]] || []).push(r); return acc; }, {});
@@ -106,24 +116,13 @@
             document.getElementById('grid-registro').innerHTML = trainers.map(t => {
                 const guideT = assegnate.filter(r => r[5] === t[1]);
                 let fatte = 0, pianificate = 0;
-                
-                guideT.forEach(r => {
-                    if (parseD(r[1]) < oggi) fatte++;
-                    else pianificate++;
-                });
+                guideT.forEach(r => { if (parseD(r[1]) < oggi) fatte++; else pianificate++; });
 
-                return `
-                <div class="bg-white p-6 rounded-[2rem] shadow-lg border border-slate-100">
+                return `<div class="bg-white p-6 rounded-[2rem] shadow-lg border border-slate-100">
                     <h3 class="font-black uppercase text-lg text-slate-800 border-b-2 border-green-500 pb-2 mb-4">${t[1]}</h3>
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-green-50 p-3 rounded-2xl text-center">
-                            <p class="text-2xl font-black text-green-600">${fatte}</p>
-                            <p class="text-[8px] font-bold uppercase text-slate-400">Guide Fatte</p>
-                        </div>
-                        <div class="bg-blue-50 p-3 rounded-2xl text-center">
-                            <p class="text-2xl font-black text-blue-600">${pianificate}</p>
-                            <p class="text-[8px] font-bold uppercase text-slate-400">Pianificate</p>
-                        </div>
+                        <div class="bg-green-50 p-3 rounded-2xl text-center"><p class="text-2xl font-black text-green-600">${fatte}</p><p class="text-[8px] font-bold uppercase text-slate-400">Guide Fatte</p></div>
+                        <div class="bg-blue-50 p-3 rounded-2xl text-center"><p class="text-2xl font-black text-blue-600">${pianificate}</p><p class="text-[8px] font-bold uppercase text-slate-400">Pianificate</p></div>
                     </div>
                 </div>`;
             }).join('');
